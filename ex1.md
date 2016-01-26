@@ -1,6 +1,10 @@
+
+
+Task 3
+
 Concurrent programming is when multiple processes lifetime overlap, as in thread programming.
 
 In parallel processes the process actually runs at the same time.
 
-In multicore
+In multicore 
 
