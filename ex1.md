@@ -1,10 +1,14 @@
+# Exercise 1 : Hello World
 
+### Task 1
+- We thought about elevators
 
-Task 3
+### Task 2
+- We implemented git
 
-Concurrent programming is when multiple processes lifetime overlap, as in thread programming.
+### Task 3
 
-In parallel processes the process actually runs at the same time.
+- Concurrent programming is when multiple processes lifetime overlap, as in thread programming, while in parallel processes the process actually runs at the same time.
 
-In multicore 
+- Multicore computers have become increasingly popular since they enable paralell programming
 
