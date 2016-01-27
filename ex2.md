@@ -1,4 +1,4 @@
-# Exercise 2 : Bottlenecks
+# [Exercise 2 : Bottlenecks](https://github.com/TTK4145/Exercises/tree/master/Ex02-Bottlenecks)
 
 - An atomic operation is an opperation in which the memmory is read and written to concurrently.
 - A semaphore is a variabel/data type used to controll memmory access by multiple processes.
