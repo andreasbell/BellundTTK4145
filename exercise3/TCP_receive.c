@@ -1,0 +1,48 @@
+/************* UDP CLIENT CODE *******************/
+//clear; clang-3.6 -Wall TCP_receive.c -o test
+
+#include <stdio.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <string.h>
+
+int main(){
+  int Socket, portNum, nBytes;
+  char buffer[1024];
+  struct sockaddr_in sa;
+
+  /*Create UDP socket*/
+  Socket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+  
+
+  /*Configure settings in address struct*/
+  sa.sin_family = AF_INET;
+  sa.sin_port = htons(33546);
+  //sa.sin_addr.s_addr = htonl(INADDR_ANY);
+  inet_pton(AF_INET, "129.241.187.23", &sa.sin_addr);
+
+  // if (-1 == connect(Socket, (struct sockaddr *)&sa, sizeof sa)){
+  //   printf("ERRRORRRRR\n");
+  // }
+
+  bind(Socket, (struct sockaddr *)&sa, sizeof sa);
+
+
+  while(1){
+    nBytes = recv(Socket,buffer,1024,0);
+    printf("Received from server: %s\n",buffer);
+
+    printf("Type a sentence to send to server:\n");
+    fgets(buffer,1024,stdin);
+
+    nBytes = strlen(buffer) + 1;
+    
+
+    /*Send message to server*/
+    sendto(Socket,buffer,nBytes,0,(struct sockaddr *)&sa, sizeof sa);
+
+    
+  }
+
+  return 0;
+}
