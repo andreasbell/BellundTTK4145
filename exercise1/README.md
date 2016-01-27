@@ -1,4 +1,4 @@
-# Exercise 1 : Hello World
+# [Exercise 1 : Hello World](https://github.com/TTK4145/Exercises/tree/master/Ex01-Intro)
 
 ### Task 1
 - We thought about elevators
