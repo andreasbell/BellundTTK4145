@@ -23,7 +23,7 @@ int main(){
 
   sa_out.sin_family = AF_INET;
   sa_out.sin_port = htons(20016);
-  sa_out.sin_addr.s_addr = inet_addr("129.241.187.147");
+  sa_out.sin_addr.s_addr = inet_addr("129.241.187.23");
 
 
 
