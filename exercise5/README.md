@@ -1,4 +1,4 @@
-Exercise 5 : Call for transport
+Exercise 5 : A working elevator
 ===============================
 
  - `io.c` and `io.h` define the core functions needed to read from and write to the libComedi device
