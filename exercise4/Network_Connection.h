@@ -1,9 +1,11 @@
 #include <netinet/in.h>
 
+#ifndef __NETWORK_CONNECTION_H__
+#define __NETWORK_CONNECTION_H__
+
 class Network_Connection{
 public:
-	int socket_in;
-	int socket_out;
+	int sock;
 	int portNum;
 	int nBytes;
 
@@ -13,3 +15,5 @@ public:
 	virtual int send(char message[], int lengt) = 0;
 	virtual int receive(char message[], int lengt) = 0;
 };
+
+#endif 
