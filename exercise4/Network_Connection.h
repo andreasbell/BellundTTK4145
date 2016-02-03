@@ -1,4 +1,4 @@
-#include <netinet/in.h>
+//#include <netinet/in.h>
 
 #ifndef __NETWORK_CONNECTION_H__
 #define __NETWORK_CONNECTION_H__
