@@ -7,6 +7,7 @@ Elevator::Elevator(){
 	while (elev_get_floor_sensor_signal() == -1){}
 	elev_set_motor_direction(DIRN_STOP);
 	last_floor = elev_get_floor_sensor_signal();
+	current_state = STOPP;
 }
 
 void Elevator::fsm_run(){
@@ -69,8 +70,12 @@ void Elevator::fsm_opendoor(){
 		break;
 
 	case OPENDOOR:
-		if (que[0] == last_floor){ //only starts timer once
+		if (elev_get_obstruction_signal()){
+			timer.start();
+		}
+		if (que.size() > 0 && que[0] == last_floor){ //only starts timer once
 			//deleteOrder(last_floor);
+			que.erase(que.begin());
 			timer.start();
 		}
 		break;
