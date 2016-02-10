@@ -2,12 +2,6 @@
 
 #include "elev.h"
 
-#include "channels.h"
-#include "io.h"
-
-#include <assert.h>
-#include <stdlib.h>
-
 #define MOTOR_SPEED 2800
 
 
@@ -33,8 +27,8 @@ void elev_init(void) {
     assert(init_success && "Unable to initialize elevator hardware!");
 
     for (int f = 0; f < N_FLOORS; f++) {
-        for (elev_button_type_t b = 0; b < N_BUTTONS; b++){
-            elev_set_button_lamp(b, f, 0);
+        for (int b = 0; b < N_BUTTONS; b++){
+            elev_set_button_lamp((elev_button_type_t)b, f, 0);
         }
     }
 

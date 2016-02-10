@@ -1,8 +1,4 @@
-//extern"C"{
-//	#include "elev.h"
-//}
-#include <vector>
-#include "Timer.h"
+
 #include "Elevator.h"
 
 Elevator::Elevator(){
@@ -18,7 +14,7 @@ void Elevator::fsm_run(){
 	case RUN:
 		break;
 
-	case STOP:
+	case STOPP:
 		elev_set_motor_direction(que[0] < last_floor ? DIRN_DOWN : DIRN_UP);
 		break;
 
@@ -42,7 +38,7 @@ void Elevator::fsm_stop(){
 		elev_set_motor_direction(DIRN_STOP);
 		break;
 
-	case STOP:
+	case STOPP:
 		break;
 
 	case OPENDOOR:
@@ -54,7 +50,7 @@ void Elevator::fsm_stop(){
 		elev_set_door_open_lamp(0);
 		break;
 	}
-	current_state = STOP;
+	current_state = STOPP;
 }
 
 void Elevator::fsm_opendoor(){
@@ -66,7 +62,7 @@ void Elevator::fsm_opendoor(){
 		timer.start();
 		break;
 
-	case STOP:
+	case STOPP:
 		elev_set_door_open_lamp(1);
 		//deleteOrder(last_floor);
 		timer.start();
@@ -110,7 +106,7 @@ bool Elevator::run(){
 		else {fsm_run();}
 		break;
 
-	case STOP:
+	case STOPP:
 		if (elev_get_stop_signal()){fsm_emergency();}
 		else if (que.size() > 0 && current_floor == que[0]){fsm_opendoor();}
 		else if (que.size() > 0 && current_floor != que[0]){fsm_run();}

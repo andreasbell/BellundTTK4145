@@ -1,3 +1,11 @@
+#pragma once
+
+#include "channels.h"
+#include "io.h"
+
+#include <assert.h>
+#include <stdlib.h>
+
 // Wrapper for libComedi Elevator control.
 // These functions provide an interface to the elevators in the real time lab
 

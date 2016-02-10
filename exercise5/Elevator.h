@@ -1,16 +1,10 @@
+#pragma once
 
-
-#ifndef __ELEVATOR_H__
-#define __ELEVATOR_H__
-
-extern "C"{
 #include "elev.h"
-}
 #include <vector>
 #include "Timer.h"
 
-
-typedef enum { RUN, STOP, OPENDOOR, EMERGENCY }State;
+typedef enum { RUN, STOPP, OPENDOOR, EMERGENCY }State;
 
 class Elevator{
 public:
@@ -33,6 +27,3 @@ private:
 
 
 };
-
-
-#endif 

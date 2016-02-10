@@ -1,5 +1,4 @@
-#include"Timer.h"
-#include <time.h>
+#include "Timer.h"
 
 bool Timer::is_time_out(int timeLength){
 	return !((startTime + timeLength) >  time(NULL));

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <time.h>
+
 class Timer{
 private:
 	int startTime;
@@ -8,3 +10,4 @@ public:
 	void start();
 	
 };
+
