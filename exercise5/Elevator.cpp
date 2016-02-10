@@ -1,7 +1,9 @@
-#include <vector.h>
-#include "Elevator.h"
-#include "elev.h"
+//extern"C"{
+//	#include "elev.h"
+//}
+#include <vector>
 #include "Timer.h"
+#include "Elevator.h"
 
 Elevator::Elevator(){
 	elev_init(); //Returns false if it fails
@@ -17,18 +19,18 @@ void Elevator::fsm_run(){
 		break;
 
 	case STOP:
-		elev_set_motor_direction(que[0] < current_floor ? DIRN_DOWN : DIRN_UP);
+		elev_set_motor_direction(que[0] < last_floor ? DIRN_DOWN : DIRN_UP);
 		break;
 
 	case OPENDOOR:
 		elev_set_door_open_lamp(0);
-		elev_set_motor_direction(que[0] < current_floor ? DIRN_DOWN : DIRN_UP);
+		elev_set_motor_direction(que[0] < last_floor ? DIRN_DOWN : DIRN_UP);
 		break;
 
 	case EMERGENCY:
 		elev_set_stop_lamp(0);
 		elev_set_door_open_lamp(0);
-		elev_set_motor_direction(que[0] < current_floor ? DIRN_DOWN : DIRN_UP);
+		elev_set_motor_direction(que[0] < last_floor ? DIRN_DOWN : DIRN_UP);
 		break;
 	}
 	current_state = RUN;
@@ -73,7 +75,7 @@ void Elevator::fsm_opendoor(){
 	case OPENDOOR:
 		if (que[0] == last_floor){ //only starts timer once
 			//deleteOrder(last_floor);
-			startTimer();
+			timer.start();
 		}
 		break;
 
@@ -103,22 +105,22 @@ bool Elevator::run(){
 	switch (current_state){
 	case RUN:
 		if (elev_get_stop_signal()){fsm_emergency();}
-		else if (que.length() > 0 && current_floor == que[0]){fsm_opendoor();}
-		else if (current_floor >= 0 && que.length() == 0){fsm_stop();}
+		else if (que.size() > 0 && current_floor == que[0]){fsm_opendoor();}
+		else if (current_floor >= 0 && que.size() == 0){fsm_stop();}
 		else {fsm_run();}
 		break;
 
 	case STOP:
 		if (elev_get_stop_signal()){fsm_emergency();}
-		else if (que.length() > 0 && current_floor == que[0]){fsm_opendoor();}
-		else if (que.length() > 0 && current_floor != que[0]){fsm_run();}
+		else if (que.size() > 0 && current_floor == que[0]){fsm_opendoor();}
+		else if (que.size() > 0 && current_floor != que[0]){fsm_run();}
 		else {fsm_stop();}
 		break;
 
 	case OPENDOOR:
 		if (elev_get_stop_signal()){fsm_emergency();}
-		else if (timer.is_time_out(3) && que.length() > 0){fsm_run();}
-		else if (timer.is_time_out(3) && que.length() == 0){fsm_stop();}
+		else if (timer.is_time_out(3) && que.size() > 0){fsm_run();}
+		else if (timer.is_time_out(3) && que.size() == 0){fsm_stop();}
 		else {fsm_opendoor();}
 		break;
 
@@ -138,6 +140,6 @@ int Elevator::update_last_floor(){
 		elev_set_floor_indicator(floor);
 
 	} 
-	return floor
+	return floor;
 }
 

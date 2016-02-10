@@ -1,14 +1,15 @@
 # Which compiler to use
-CC = gcc
+CC = clang-3.6
 
 # Compiler flags go here.
 CFLAGS = -std=c11 -g -Wall -Wextra
+CPPFLAGS = -std=c++11 -g -Wall -Wextra
 
 # Linker flags go here.
 LDFLAGS = -lcomedi -lm
 
 # list of sources
-ELEVSRC = elev.c io.c main.c
+ELEVSRC = elev.c io.c *.c
 
 # program executable file name.
 TARGET = elevator
@@ -17,19 +18,24 @@ TARGET = elevator
 all: $(TARGET)
 
 # Define all object files.
-ELEVOBJ = $(ELEVSRC:.c=.o)
+ELEVOBJC = $(ELEVSRC:.c=.o) 
+#ELEVOBJCPP = $(ELEVSRC:.cpp=.o)
 
 # rule to link the program
-$(TARGET): $(ELEVOBJ)
+$(TARGET): $(ELEVOBJC) #$(ELEVOBJCPP)
 	$(CC) $^ -o $@ $(LDFLAGS)
 
 # Compile: create object files from C source files.
 %.o : %.c
 	$(CC) $(CFLAGS) -c $< -o $@ 
 
+# Compile: create object files from C source files.
+#%.o : %.c
+#	$(CC) $(CPPFLAGS) -c $< -o $@ 
+
 # rule for cleaning re-compilable files.
 clean:
-	rm -f $(TARGET) $(ELEVOBJ)
+	rm -f $(TARGET) $(ELEVOBJC)
 
 rebuild:	clean all
 
