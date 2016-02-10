@@ -1,42 +1,47 @@
-# Which compiler to use
-CC = clang-3.6
+program_EXECUTABLE := executable
 
-# Compiler flags go here.
-CFLAGS = -std=c11 -g -Wall -Wextra
-CPPFLAGS = -std=c++11 -g -Wall -Wextra
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
+current_path := $(abspath ../$(current_dir))
 
-# Linker flags go here.
-LDFLAGS = -lcomedi -lm
+program_CXX_SRCS := $(wildcard *.cpp)
+program_CXX_OBJS := ${program_CXX_SRCS:.cpp=.o}
 
-# list of sources
-ELEVSRC = elev.c io.c *.c
+program_C_SRCS := $(wildcard *.c)
+program_C_OBJS += ${program_C_SRCS:.c=.o}
 
-# program executable file name.
-TARGET = elevator
+program_OBJS := $(program_C_OBJS)
+program_OBJS += $(program_CXX_OBJS)
 
-# top-level rule, to compile everything.
-all: $(TARGET)
 
-# Define all object files.
-ELEVOBJC = $(ELEVSRC:.c=.o) 
-#ELEVOBJCPP = $(ELEVSRC:.cpp=.o)
+program_LIBRARY_DIRS := $(current_dir) $(current_dir)/headers/ $(current_path)/headers/
+program_LIBRARIES :=  m pthread
 
-# rule to link the program
-$(TARGET): $(ELEVOBJC) #$(ELEVOBJCPP)
-	$(CC) $^ -o $@ $(LDFLAGS)
+CXXFLAGS += -Wall -g -std=c++11
+CFLAGS += -Wall -g -std=c99
 
-# Compile: create object files from C source files.
-%.o : %.c
-	$(CC) $(CFLAGS) -c $< -o $@ 
+CPPFLAGS += $(foreach includedir,$(program_INCLUDE_DIRS),-I$(includedir))
+LDFLAGS += $(foreach librarydir,$(program_LIBRARY_DIRS),-L$(librarydir))
+LDFLAGS += $(foreach library,$(program_LIBRARIES),-l$(library))
 
-# Compile: create object files from C source files.
-#%.o : %.c
-#	$(CC) $(CPPFLAGS) -c $< -o $@ 
+.PHONY: all clean distclean
+all: $(program_EXECUTABLE)
 
-# rule for cleaning re-compilable files.
+$(program_CXX_OBJS):%.o:%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@ $(CPPFLAGS) $(LDFLAGS)
+
+$(program_C_OBJS):%.o:%.c
+	$(CXX) $(CFLAGS) -c $< -o $@ $(CPPFLAGS) $(LDFLAGS)
+
+$(program_EXECUTABLE):$(program_OBJS)
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(TARGET_ARCH) $(LDFLAGS) -o $(program_EXECUTABLE) $(program_OBJS)
+
 clean:
-	rm -f $(TARGET) $(ELEVOBJC)
+	@- $(RM) $(program_EXECUTABLE)
+	@- $(RM) $(program_C_OBJS)
+	@- $(RM) $(program_CXX_OBJS)
 
-rebuild:	clean all
+distclean: clean
 
-.PHONY: all rebuild clean
+.PHONY: all clean
+
