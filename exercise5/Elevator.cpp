@@ -1,5 +1,7 @@
+#include <vector.h>
 #include "Elevator.h"
 #include "elev.h"
+#include "Timer.h"
 
 Elevator::Elevator(){
 	elev_init(); //Returns false if it fails
@@ -15,18 +17,18 @@ void Elevator::fsm_run(){
 		break;
 
 	case STOP:
-		startElevatorInCorrectDirection();
+		elev_set_motor_direction(que[0] < current_floor ? DIRN_DOWN : DIRN_UP);
 		break;
 
 	case OPENDOOR:
 		elev_set_door_open_lamp(0);
-		startElevatorInCorrectDirection();
+		elev_set_motor_direction(que[0] < current_floor ? DIRN_DOWN : DIRN_UP);
 		break;
 
 	case EMERGENCY:
 		elev_set_stop_lamp(0);
 		elev_set_door_open_lamp(0);
-		startElevatorInCorrectDirection();
+		elev_set_motor_direction(que[0] < current_floor ? DIRN_DOWN : DIRN_UP);
 		break;
 	}
 	current_state = RUN;
@@ -54,26 +56,23 @@ void Elevator::fsm_stop(){
 }
 
 void Elevator::fsm_opendoor(){
-	updateLastFloor(); //Setts last floor so it can be used in switch
 	switch (current_state){
 	case RUN:
 		elev_set_motor_direction(DIRN_STOP);
 		elev_set_door_open_lamp(1);
-		deleteOrder(last_floor);
-		setOrderLights();
-		startTimer();
+		//deleteOrder(last_floor);
+		timer.start();
 		break;
 
 	case STOP:
 		elev_set_door_open_lamp(1);
-		deleteOrder(last_floor);
-		startTimer();
+		//deleteOrder(last_floor);
+		timer.start();
 		break;
 
 	case OPENDOOR:
-		deleteOrder(last_floor);
-		setOrderLights();
-		if (getNextStop(last_floor) == last_floor){ //only starts timer once
+		if (que[0] == last_floor){ //only starts timer once
+			//deleteOrder(last_floor);
 			startTimer();
 		}
 		break;
@@ -81,16 +80,13 @@ void Elevator::fsm_opendoor(){
 	case EMERGENCY:
 		elev_set_stop_lamp(0);
 		elev_set_door_open_lamp(1);
-		startTimer();
+		timer.start();
 		break;
 	}
 	current_state = OPENDOOR;
 }
 
-void Elevator::fsm_emergency()
-{
-	deleteAllOrders();
-	setOrderLights();
+void Elevator::fsm_emergency(){
 	if (current_state != EMERGENCY){
 		elev_set_motor_direction(DIRN_STOP);
 		elev_set_stop_lamp(1);
@@ -102,31 +98,27 @@ void Elevator::fsm_emergency()
 }
 
 bool Elevator::run(){
-	updateLastFloor();
-
-	if (detectNewOrder()){
-		setOrderLights();
-	}
+	int current_floor = update_last_floor();
 
 	switch (current_state){
 	case RUN:
 		if (elev_get_stop_signal()){fsm_emergency();}
-		else if (getNextStop(getLastFloor()) == elev_get_floor_sensor_signal()){fsm_opendoor();}
-		else if (elev_get_floor_sensor_signal() >= 0 && getNextStop(getLastFloor()) < 0){fsm_stop();}
+		else if (que.length() > 0 && current_floor == que[0]){fsm_opendoor();}
+		else if (current_floor >= 0 && que.length() == 0){fsm_stop();}
 		else {fsm_run();}
 		break;
 
 	case STOP:
 		if (elev_get_stop_signal()){fsm_emergency();}
-		else if (elev_get_floor_sensor_signal() >= 0 && getNextStop(getLastFloor()) == elev_get_floor_sensor_signal()){fsm_opendoor();}
-		else if (getNextStop(getLastFloor()) >= 0 && getNextStop(getLastFloor()) != elev_get_floor_sensor_signal()){fsm_run();}
+		else if (que.length() > 0 && current_floor == que[0]){fsm_opendoor();}
+		else if (que.length() > 0 && current_floor != que[0]){fsm_run();}
 		else {fsm_stop();}
 		break;
 
 	case OPENDOOR:
 		if (elev_get_stop_signal()){fsm_emergency();}
-		else if (isTimeOut(3) && (getNextStop(getLastFloor()) >= 0)){fsm_run();}
-		else if (isTimeOut(3) && (getNextStop(getLastFloor()) < 0)){fsm_stop();}
+		else if (timer.is_time_out(3) && que.length() > 0){fsm_run();}
+		else if (timer.is_time_out(3) && que.length() == 0){fsm_stop();}
 		else {fsm_opendoor();}
 		break;
 
@@ -138,3 +130,14 @@ bool Elevator::run(){
 	
 	return true;
 }
+
+int Elevator::update_last_floor(){
+	int floor = elev_get_floor_sensor_signal();
+	if (floor >= 0 && floor != last_floor){
+		last_floor = floor;
+		elev_set_floor_indicator(floor);
+
+	} 
+	return floor
+}
+

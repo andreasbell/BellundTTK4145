@@ -1,15 +1,11 @@
 #include"Timer.h"
 #include <time.h>
 
-static int startTime;
-
-int isTimeOut(int timeLength)
-{
+bool Timer::is_time_out(int timeLength){
 	return !((startTime + timeLength) >  time(NULL));
 }
 
-void startTimer()
-{
+void Timer::start(){
 	startTime = time(NULL);
 }
 
