@@ -9,9 +9,15 @@
 #define BROADCAST_IP "129.241.187.255"
 
 
-UDP_Connection::UDP_Connection(): UDP_Connection(DEFAULT_PORT, BROADCAST_IP) {}
+UDP_Connection::UDP_Connection(){
+	init(DEFAULT_PORT, BROADCAST_IP); 
+}
 
 UDP_Connection::UDP_Connection(int port, char ip[]){
+	init(port, ip); 
+}
+
+void UDP_Connection::init(int port, char ip[]){
 	/*Create UDP socket*/
 	sock = socket(PF_INET, SOCK_DGRAM, 0);
 

@@ -8,6 +8,7 @@ class TCP_Connection: public Network_Connection{
 public:
 	TCP_Connection();
 	TCP_Connection(int port);
+	void init(int port);
 
 	int connect_to(char ip[]);
 	int accept_connection();
