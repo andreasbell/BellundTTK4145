@@ -4,7 +4,7 @@
 #include <vector>
 #include "Timer.h"
 
-typedef enum { RUN, STOPP, OPENDOOR, EMERGENCY }State;
+typedef enum { RUN, IDLE, OPENDOOR, EMERGENCY }State;
 
 class Elevator{
 public:
@@ -19,7 +19,7 @@ public:
 
 private:
 	void fsm_run();
-	void fsm_stop();
+	void fsm_idle();
 	void fsm_opendoor();
 	void fsm_emergency();
 

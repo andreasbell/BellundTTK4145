@@ -7,7 +7,7 @@ Elevator::Elevator(){
 	while (elev_get_floor_sensor_signal() == -1){}
 	elev_set_motor_direction(DIRN_STOP);
 	last_floor = elev_get_floor_sensor_signal();
-	current_state = STOPP;
+	current_state = IDLE;
 }
 
 void Elevator::fsm_run(){
@@ -15,31 +15,29 @@ void Elevator::fsm_run(){
 	case RUN:
 		break;
 
-	case STOPP:
-		elev_set_motor_direction(que[0] < last_floor ? DIRN_DOWN : DIRN_UP);
+	case IDLE:
 		break;
 
 	case OPENDOOR:
 		elev_set_door_open_lamp(0);
-		elev_set_motor_direction(que[0] < last_floor ? DIRN_DOWN : DIRN_UP);
 		break;
 
 	case EMERGENCY:
 		elev_set_stop_lamp(0);
-		elev_set_door_open_lamp(0);
-		elev_set_motor_direction(que[0] < last_floor ? DIRN_DOWN : DIRN_UP);
 		break;
 	}
+	direction = que[0] < last_floor ? DIRN_DOWN : DIRN_UP; 
+	elev_set_motor_direction(direction);
 	current_state = RUN;
 }
 
-void Elevator::fsm_stop(){
+void Elevator::fsm_idle(){
 	switch (current_state){
 	case RUN:
 		elev_set_motor_direction(DIRN_STOP);
 		break;
 
-	case STOPP:
+	case IDLE:
 		break;
 
 	case OPENDOOR:
@@ -51,7 +49,7 @@ void Elevator::fsm_stop(){
 		elev_set_door_open_lamp(0);
 		break;
 	}
-	current_state = STOPP;
+	current_state = IDLE;
 }
 
 void Elevator::fsm_opendoor(){
@@ -63,7 +61,7 @@ void Elevator::fsm_opendoor(){
 		timer.start();
 		break;
 
-	case STOPP:
+	case IDLE:
 		elev_set_door_open_lamp(1);
 		//deleteOrder(last_floor);
 		timer.start();
@@ -107,26 +105,26 @@ bool Elevator::run(){
 	case RUN:
 		if (elev_get_stop_signal()){fsm_emergency();}
 		else if (que.size() > 0 && current_floor == que[0]){fsm_opendoor();}
-		else if (current_floor >= 0 && que.size() == 0){fsm_stop();}
+		else if (current_floor >= 0 && que.size() == 0){fsm_idle();}
 		else {fsm_run();}
 		break;
 
-	case STOPP:
+	case IDLE:
 		if (elev_get_stop_signal()){fsm_emergency();}
 		else if (que.size() > 0 && current_floor == que[0]){fsm_opendoor();}
 		else if (que.size() > 0 && current_floor != que[0]){fsm_run();}
-		else {fsm_stop();}
+		else {fsm_idle();}
 		break;
 
 	case OPENDOOR:
 		if (elev_get_stop_signal()){fsm_emergency();}
 		else if (timer.is_time_out(3) && que.size() > 0){fsm_run();}
-		else if (timer.is_time_out(3) && que.size() == 0){fsm_stop();}
+		else if (timer.is_time_out(3) && que.size() == 0){fsm_idle();}
 		else {fsm_opendoor();}
 		break;
 
 	case EMERGENCY:
-		if (!elev_get_stop_signal()){fsm_stop();}
+		if (!elev_get_stop_signal()){fsm_idle();}
 		else {fsm_emergency();}
 		break;
 	}
@@ -139,7 +137,6 @@ int Elevator::update_last_floor(){
 	if (floor >= 0 && floor != last_floor){
 		last_floor = floor;
 		elev_set_floor_indicator(floor);
-
 	} 
 	return floor;
 }
