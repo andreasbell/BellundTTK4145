@@ -16,7 +16,7 @@ int main(){
 
   /*Configure settings in address struct*/
   serverAddr.sin_family = AF_INET;
-  serverAddr.sin_port = htons(30016);
+  serverAddr.sin_port = htons(20016);
   serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
   bind(Socket, (struct sockaddr *)&serverAddr, sizeof serverAddr);
@@ -27,6 +27,7 @@ int main(){
     	printf("Received from server: %s\n",buffer);
 	nBytes = 0;
     }
+	printf("Received from server: %s\n",buffer);
   }
 
   return 0;
