@@ -63,21 +63,21 @@ void thread_server(){
 
 int main(){
   char buffer[1024];
-  UDP_Connection UDP(20016, "129.241.187.23");
+  UDP_Connection UDP;
 
 
-  while(0){
-
-    printf("Type a sentence to send to server:\n");
+  while(1){
+    if (UDP.error){printf("ERROR: %s\n", strerror(errno));}
+    printf("Type a sentence to send to broadcast:\n");
     fgets(buffer,1024,stdin);
     
     /*Send message to server*/
     UDP.send(buffer, 1024);
 
     /*receive message from host*/
-    //UDP.receive(buffer, 1024);
+    //int size = UDP.receive(buffer, 1024);
 
-    //printf("Received from server: %s\n",buffer);
+    //if(size > 1){printf("Received from server: %s\n",buffer);}
   }
 
   thread t1(thread_server);
