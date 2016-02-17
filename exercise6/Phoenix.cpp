@@ -3,12 +3,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <errno.h>
+#include <string.h>
 
 #include "Phoenix.h"
 #include "Timer.h"
 
 #define DEFAULT_PORT 20016
-#define BROADCAST_IP "129.241.187.255"
+#define BROADCAST_IP "127.0.0.1"
 
 int main(){
 	char buffer[1024];
@@ -32,6 +34,7 @@ int main(){
 	sa_out.sin_family = AF_INET;
 	sa_out.sin_port = htons(DEFAULT_PORT);
 	sa_out.sin_addr.s_addr = inet_addr(BROADCAST_IP);
+	//sa_out.sin_addr.s_addr = htonl(INADDR_BROADCAST);
 
 	printf("Bind: %i \n", bind(sock, (struct sockaddr *)&sa_in, sizeof sa_in));
 
@@ -39,34 +42,42 @@ int main(){
 	Timer timer;
 	timer.start();
 
+	int counter = 0;
+
 	printf("Ich bin SLAVE\n");
 
 	while(true){
 		switch(current_state){
 		case MASTER:
-			printf("sendto: %i\n", sendto(sock,"I am your master!\0",10,0,(struct sockaddr *)&sa_out, sizeof sa_out));
+			sprintf(buffer, "I am your master! %i", counter);
+			//printf("sendto: %i\n", sendto(sock,buffer,1024,0,(struct sockaddr *)&sa_out, sizeof sa_out));
+			//printf("ERROR: %s\n", strerror(errno));
+			sendto(sock,buffer,1024,0,(struct sockaddr *)&sa_out, sizeof sa_out);
+			printf("%i\n", counter);
 			sleep(1);
+			counter++;
 			break;
 		case SLAVE:
 			nBytes = recv(sock,buffer,1024,0);
-			if (nBytes > 0){
-				printf("%s\n", buffer);
-				nBytes = 0;
-			}
-			if (nBytes > 0 && buffer == "I am your master!"){
+			if (nBytes > 0 && !strncmp(buffer, "I am your master!", 17)){
 				timer.start();
+				counter = atoi((&buffer[17]));
+				nBytes = 0;
 			}
 			else if(timer.is_time_out(3)){
 				current_state = MASTER;
 				printf("Ich bin MASTER\n");
-				//system("gnome-terminal -e './executable'");
+				close(sock);
+				system("gnome-terminal -e './executable'");
+				sleep(1);
+				sock = socket(PF_INET, SOCK_DGRAM | SOCK_NONBLOCK, 0);
 
 			}
-
 			break;
 		}
 	}
 
+	close(sock);
 	return 0;
 }
 
