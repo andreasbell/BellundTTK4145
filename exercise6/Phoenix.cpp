@@ -10,17 +10,19 @@
 #include "Timer.h"
 
 #define DEFAULT_PORT 20016
-#define BROADCAST_IP "127.0.0.1"
+#define BROADCAST_IP "129.241.187.255"
 
 int main(){
 	char buffer[1024];
 	int nBytes = 0;
 
-	int sock = socket(PF_INET, SOCK_DGRAM | SOCK_NONBLOCK, 0);
+	int sock = socket(AF_INET, SOCK_DGRAM | SOCK_NONBLOCK, 0);
 	if(sock < 0){
 		printf("Socket error: %i\n", sock);
 		return 1;
 	}
+
+	int broadcastEnable=1;
 
 	struct sockaddr_in sa_in;
 	struct sockaddr_in sa_out;
@@ -33,8 +35,8 @@ int main(){
 
 	sa_out.sin_family = AF_INET;
 	sa_out.sin_port = htons(DEFAULT_PORT);
-	sa_out.sin_addr.s_addr = inet_addr(BROADCAST_IP);
-	//sa_out.sin_addr.s_addr = htonl(INADDR_BROADCAST);
+	//sa_out.sin_addr.s_addr = inet_addr(BROADCAST_IP);
+	sa_out.sin_addr.s_addr = htonl(INADDR_BROADCAST);
 
 	printf("Bind: %i \n", bind(sock, (struct sockaddr *)&sa_in, sizeof sa_in));
 
@@ -53,7 +55,7 @@ int main(){
 			//printf("sendto: %i\n", sendto(sock,buffer,1024,0,(struct sockaddr *)&sa_out, sizeof sa_out));
 			//printf("ERROR: %s\n", strerror(errno));
 			sendto(sock,buffer,1024,0,(struct sockaddr *)&sa_out, sizeof sa_out);
-			printf("%i\n", counter);
+			printf("%i, %s\n", counter, strerror(errno));
 			sleep(1);
 			counter++;
 			break;
@@ -71,6 +73,10 @@ int main(){
 				system("gnome-terminal -e './executable'");
 				sleep(1);
 				sock = socket(PF_INET, SOCK_DGRAM | SOCK_NONBLOCK, 0);
+
+				//Enable UDP broadcast
+				int ret=setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &broadcastEnable, sizeof(broadcastEnable));
+				if(ret){printf("Error: setsockopt call failed"); }
 
 			}
 			break;
