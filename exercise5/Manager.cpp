@@ -1,6 +1,9 @@
 #include "Manager.h"
 
 #define TIMEOUT 5
+#define TIME_TRAVEL_BETWEEN_FLOORS 2100
+#define TIME_DOOR_OPEN 3000
+
 
 Manager::Manager(){
 	current_state = CONNECTING;
@@ -41,31 +44,23 @@ void Manager::run(){
 
 
 double cost_function(Elevator e, int floor){
-	double weight_distance = e.last_floor - floor;
-	weight_distance = (abs(weight_distance)/(weight_distance) - (int)e.direction)? abs(e.last_floor - floor) : 10;
-
-
-	double weight_state;
-
-	switch (e.current_state){
-	case RUN:
-		weight_state = 2;
-		break;
-
-	case IDLE:
-		weight_state = 1;
-		break;
-
-	case OPENDOOR:
-		weight_state = 2;
-		break;
-
-	case EMERGENCY:
-		weight_state = 10;
-		break;
+	double duration = 0;
+	//function add order to elevator
+	if (e.current_state == OPENDOOR){
+		duration += TIME_DOOR_OPEN/2.0;
 	}
-
-	double weight_que = e.que.size();
-
-	return weight_distance + weight_state + weight_que;
+	else if (e.current_state == RUN){
+		duration += TIME_TRAVEL_BETWEEN_FLOORS/2.0;
+	}
+	while(true){
+		if (e.should_stop(e.last_floor)){
+			duration += TIME_DOOR_OPEN;
+			/*clear order*/
+			if (e.choose_direction() == DIRN_STOP){
+				return duration;
+			}
+		}
+		duration += TIME_TRAVEL_BETWEEN_FLOORS;
+		e.last_floor += e.direction;
+	}
 }
