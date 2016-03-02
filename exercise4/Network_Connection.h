@@ -9,6 +9,8 @@ public:
 	int portNum;
 	int nBytes;
 
+	bool error = false;
+
 	struct sockaddr_in sa_in;
 	struct sockaddr_in sa_out;
 
