@@ -10,7 +10,7 @@
 #include "Timer.h"
 
 #define DEFAULT_PORT 20016
-#define BROADCAST_IP "127.0.0.1"
+#define BROADCAST_IP "129.241.187.147"
 
 int main(){
 	char buffer[1024];
