@@ -18,6 +18,7 @@ private:
 	std::vector<Order> q;
 public:
 	int size();
+    int get_order(int index);
 	Order next();
 	void delete_order();
 	void insert(Order order, Elevator e);

@@ -1,5 +1,5 @@
 #pragma once
-
+#include "que.h"
 #include "elev.h"
 #include <vector>
 #include "Timer.h"
@@ -11,8 +11,8 @@ public:
 	elevator_state current_state;
 	elev_motor_direction_t direction;
 	int last_floor;
-	std::vector<int> que;
 	Timer timer;
+    Que que;
 
 	bool run();
 	Elevator();

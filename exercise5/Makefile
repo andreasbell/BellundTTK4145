@@ -1,6 +1,6 @@
 program_EXECUTABLE := executable
 
-CXX = clang++-3.6
+#CXX = clang++-3.6
 
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
@@ -30,7 +30,7 @@ LDFLAGS += $(foreach library,$(program_LIBRARIES),-l$(library))
 all: $(program_EXECUTABLE)
 
 $(program_CXX_OBJS):%.o:%.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@ $(CPPFLAGS) $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ $(CPPFLAGS) -I dependencies/ $(LDFLAGS)
 
 $(program_C_OBJS):%.o:%.c
 	$(CXX) $(CXXFLAGS) -c $< -o $@ $(CPPFLAGS) $(LDFLAGS)

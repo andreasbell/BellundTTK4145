@@ -39,6 +39,9 @@ void Que::insert(Order order, Elevator){
 	q.push_back(order);
 }
 
+Order Que::get_order(int index){
+    return q[index]; 
+
 void Que::delete_order(){
 	if(this->size() > 0){
 		q.erase(q.begin());
