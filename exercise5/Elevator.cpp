@@ -26,8 +26,7 @@ void Elevator::fsm_run(){
 		elev_set_stop_lamp(0);
 		break;
 	}
-	direction = que[0] < last_floor ? DIRN_DOWN : DIRN_UP; 
-	elev_set_motor_direction(direction);
+	elev_set_motor_direction(choose_direction());
 	current_state = RUN;
 }
 
@@ -104,14 +103,14 @@ bool Elevator::run(){
 	switch (current_state){
 	case RUN:
 		if (elev_get_stop_signal()){fsm_emergency();}
-		else if (que.size() > 0 && current_floor == que[0]){fsm_opendoor();}
+		else if (should_stop(current_floor)){fsm_opendoor();}
 		else if (current_floor >= 0 && que.size() == 0){fsm_idle();}
 		else {fsm_run();}
 		break;
 
 	case IDLE:
 		if (elev_get_stop_signal()){fsm_emergency();}
-		else if (que.size() > 0 && current_floor == que[0]){fsm_opendoor();}
+		else if (should_stop(current_floor)){fsm_opendoor();}
 		else if (que.size() > 0 && current_floor != que[0]){fsm_run();}
 		else {fsm_idle();}
 		break;
@@ -141,3 +140,16 @@ int Elevator::update_last_floor(){
 	return floor;
 }
 
+elev_motor_direction_t Elevator::choose_direction(){
+	if (que.size() > 0){
+		direction = que[0] < last_floor ? DIRN_DOWN : DIRN_UP;
+	}
+	else{
+		direction = DIRN_STOP;
+	}
+	return direction;
+}
+
+bool Elevator::should_stop(int floor){
+	return (que.size() > 0 && floor == que[0]);
+}

@@ -4,11 +4,11 @@
 #include <vector>
 #include "Timer.h"
 
-typedef enum { RUN, IDLE, OPENDOOR, EMERGENCY }State;
+typedef enum { RUN, IDLE, OPENDOOR, EMERGENCY }elevator_state;
 
 class Elevator{
 public:
-	State current_state;
+	elevator_state current_state;
 	elev_motor_direction_t direction;
 	int last_floor;
 	std::vector<int> que;
@@ -17,13 +17,15 @@ public:
 	bool run();
 	Elevator();
 
+	/*Help functions*/
+	int update_last_floor();
+	bool should_stop(int floor);
+	elev_motor_direction_t choose_direction();
+
 private:
+	/*Finite state machine*/
 	void fsm_run();
 	void fsm_idle();
 	void fsm_opendoor();
 	void fsm_emergency();
-
-	int update_last_floor();
-
-
 };
