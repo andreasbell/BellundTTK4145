@@ -1,0 +1,8 @@
+{
+        "my-encoding" : "UTF-8",
+        "my_plug_ins" : [
+            "python",
+            "c++",
+            "ruby"
+            ]
+}

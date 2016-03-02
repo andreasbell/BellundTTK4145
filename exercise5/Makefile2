@@ -1,0 +1,3 @@
+all:
+	g++ -o exec -I dependencies/jsoncpp/include json_test.cpp json/jsoncpp.cpp
+
