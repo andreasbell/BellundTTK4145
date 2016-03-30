@@ -1,12 +1,11 @@
 program_EXECUTABLE := executable
 
-CXX = clang++-3.6
-
+#CXX = clang++-3.6
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 current_path := $(abspath ../$(current_dir))
 
-program_CXX_SRCS := $(wildcard *.cpp)
+program_CXX_SRCS := $(wildcard *.cpp) json/jsoncpp.cpp
 program_CXX_OBJS := ${program_CXX_SRCS:.cpp=.o}
 
 program_C_SRCS := $(wildcard *.c)
@@ -16,8 +15,9 @@ program_OBJS := $(program_C_OBJS)
 program_OBJS += $(program_CXX_OBJS)
 
 
-program_LIBRARY_DIRS := $(current_dir) $(current_dir)/headers/ $(current_path)/headers/
+program_LIBRARY_DIRS := $(current_dir) $(current_dir)/headers/  
 program_LIBRARIES := comedi m pthread
+program_INCLUDE_DIRS := $(current_dir)/dependencies/jsoncpp/include/ 
 
 CXXFLAGS += -Wall -g -std=c++11
 CFLAGS += -Wall -g -std=c99
@@ -30,7 +30,7 @@ LDFLAGS += $(foreach library,$(program_LIBRARIES),-l$(library))
 all: $(program_EXECUTABLE)
 
 $(program_CXX_OBJS):%.o:%.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@ $(CPPFLAGS) -I dependencies/ $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ $(CPPFLAGS) $(LDFLAGS)
 
 $(program_C_OBJS):%.o:%.c
 	$(CXX) $(CXXFLAGS) -c $< -o $@ $(CPPFLAGS) $(LDFLAGS)
