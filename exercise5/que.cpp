@@ -5,31 +5,27 @@ int Que::size(){
 }
 
 Order Que::next(){
-	if(this->size() > 0){
-		return q[0];
-	}
-	Order invalid(-1 , EXTERNAL);
-	return invalid;
+	return this->get_order(0);
 }
 
-void Que::insert(Order order, Elevator){
+void Que::insert(Order order, elev_motor_direction_t direction, int last_floor){
 	if (this->size() == 0){
 		q.push_back(order);
 		return;
 	}
-	else if(e.direction == 0 && order.floor == e.last_floor){
+	else if(direction == DIRN_STOP && order.floor == last_floor){
 		q.insert (q.begin(), order);
 		return;
 	}
 	else{
-		int prev = e.last_floor;
+		int prev = last_floor;
 		for (int i = 0; i < q.size(); ++i){
-			int next = que[i].floor;
-			if (prev < next && order.type != INTERNAL_DOWN && order.floor <= next){
+			int next = q[i].floor;
+			if (prev < next && order.type != EXTERNAL_DOWN && order.floor <= next){
 				q.insert (q.begin() + i, order);
 				return;
 			}
-			if (prev > next && order.type != INTERNAL_UP && order.floor >= next){
+			if (prev > next && order.type != EXTERNAL_UP && order.floor >= next){
 				q.insert (q.begin() + i, order);
 				return;
 			}
@@ -40,8 +36,12 @@ void Que::insert(Order order, Elevator){
 }
 
 Order Que::get_order(int index){
-    return q[index]; 
-
+    if(this->size() > index){
+		return q[index];
+	}
+	Order invalid(-1 , INTERNAL);
+	return invalid;
+}
 void Que::delete_order(){
 	if(this->size() > 0){
 		q.erase(q.begin());

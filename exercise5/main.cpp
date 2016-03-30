@@ -8,8 +8,8 @@ using namespace std;
 Elevator e;
 
 void thread_1_func(){
-	e.que.push_back(2);
-	e.que.push_back(0);
+	Order o(2, INTERNAL);
+	e.que.insert(o, e.direction, e.last_floor);
 
 	while(true){
 		e.run();
@@ -17,11 +17,11 @@ void thread_1_func(){
 }
 
 void thread_2_func(){
-	char buffer[1024];
+	//char buffer[1024];
 	while(true){
-		printf("\nFoor: ");
-		fgets(buffer,1024,stdin);
-		e.que.push_back(buffer[0]-'1');
+		printf("Next Foor: %i \n", e.que.next().floor);
+		//fgets(buffer,1024,stdin);
+		//e.que.push_back(buffer[0]-'1');
 	}
 }
 
