@@ -1,16 +1,16 @@
 #pragma once
 
 #include <vector>
-#include "Elevator.h"
+#include "elev.h"
 
-typedef enum { EXTERNAL, INTERNAL_UP, INTERNAL_DOWN }order_type;
+typedef enum { INTERNAL, EXTERNAL_UP, EXTERNAL_DOWN }order_type;
 
 class Order{
 public:
 	int floor;
 	order_type type;
 
-	order(int floor, order_type type): floor(floor), type(type);
+	Order(int floor, order_type type): floor(floor), type(type){};
 };
 
 class Que{
@@ -18,8 +18,8 @@ private:
 	std::vector<Order> q;
 public:
 	int size();
-    int get_order(int index);
+    Order get_order(int index);
 	Order next();
 	void delete_order();
-	void insert(Order order, Elevator e);
+	void insert(Order order, elev_motor_direction_t direction, int last_floor);
 };
