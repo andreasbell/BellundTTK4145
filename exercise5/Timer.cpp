@@ -8,4 +8,7 @@ void Timer::start(){
 	startTime = time(NULL);
 }
 
+int Timer::start_time(){
+	return startTime;
+}
 

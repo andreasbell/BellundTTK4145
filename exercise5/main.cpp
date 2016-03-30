@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include "Elevator.h"
+#include "button_poller.h"
 #include <thread>
 
 using namespace std;
@@ -8,9 +9,6 @@ using namespace std;
 Elevator e;
 
 void thread_1_func(){
-	Order o(2, INTERNAL);
-	e.que.insert(o, e.direction, e.last_floor);
-
 	while(true){
 		e.run();
 	}
@@ -19,9 +17,10 @@ void thread_1_func(){
 void thread_2_func(){
 	//char buffer[1024];
 	while(true){
-		printf("Next Foor: %i \n", e.que.next().floor);
+		//printf("Next Foor: %i \n", e.que.next().floor);
 		//fgets(buffer,1024,stdin);
 		//e.que.push_back(buffer[0]-'1');
+		poll_orders(e);
 	}
 }
 
