@@ -1,4 +1,5 @@
 #include "message_manager.h"
+#include "json/json/json.h"
 #include "Elevator.h"
 
 /*message format
@@ -14,7 +15,7 @@ std::string make_message(Elevator elev){
     Json::Value message;
     Json::Value order;
     for(int i = 0; i < elev.que.size(); i++){
-        message["que"][i] = {elev.que[i].floor, elev.que[i].type};
+        message["que"][i] = {elev.que.get_order(i).floor, elev.que.get_order(i).type};
     }
 } 
 Elevator unpack_message(std::string message){
@@ -22,9 +23,11 @@ Elevator unpack_message(std::string message){
 }
 int main(){
     Elevator elev;
+    Order order(1, EXTERNAL);
     elev.current_state = RUN;
     elev.direction = 1;
     elev.last_floor = 1;
-    elev.que.get
+    elev.que.insert(order, elev);
+
     return 0;
 }

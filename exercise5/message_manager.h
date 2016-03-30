@@ -1,4 +1,4 @@
-#include "json/json.h"
+#pragma once
 #include <string>
 #include "Elevator.h" 
 #include <map>
@@ -12,5 +12,5 @@
  */
 
 std::string make_message(Elevator elev); 
-std::Elevator unpack_message(std::string message);
+Elevator unpack_message(std::string message);
 

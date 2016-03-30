@@ -10,7 +10,7 @@ public:
 	int floor;
 	order_type type;
 
-	order(int floor, order_type type): floor(floor), type(type);
+	Order(int floor, order_type type): floor(floor), type(type){};
 };
 
 class Que{
