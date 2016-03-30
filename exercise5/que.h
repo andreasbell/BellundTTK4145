@@ -3,14 +3,12 @@
 #include <vector>
 #include "elev.h"
 
-typedef enum { INTERNAL, EXTERNAL_UP, EXTERNAL_DOWN }order_type;
-
 class Order{
 public:
 	int floor;
-	order_type type;
+	elev_button_type_t type;
 
-	Order(int floor, order_type type): floor(floor), type(type){};
+	Order(int floor, elev_button_type_t type): floor(floor), type(type){};
 };
 
 class Que{

@@ -1,5 +1,6 @@
 
 #include "Elevator.h"
+#include <stdio.h>
 
 Elevator::Elevator(){
 	elev_init(); //Returns false if it fails
@@ -7,6 +8,7 @@ Elevator::Elevator(){
 	while (elev_get_floor_sensor_signal() == -1){}
 	elev_set_motor_direction(DIRN_STOP);
 	last_floor = elev_get_floor_sensor_signal();
+	elev_set_floor_indicator(last_floor);
 	current_state = IDLE;
 }
 
@@ -68,7 +70,7 @@ void Elevator::fsm_opendoor(){
 		if (elev_get_obstruction_signal()){
 			timer.start();
 		}
-		if (que.next().floor == last_floor){ //only starts timer once
+		if (que.size() > 0 && que.next().floor == last_floor){ //only starts timer once
 			que.delete_order();
 			timer.start();
 		}
@@ -95,6 +97,7 @@ void Elevator::fsm_emergency(){
 }
 
 bool Elevator::run(){
+	//printf("State: %i Floor: %i Target: %i Time %i \n", current_state, last_floor, que.next().floor, timer.start_time());
 	int current_floor = update_last_floor();
 
 	switch (current_state){
@@ -148,5 +151,5 @@ elev_motor_direction_t Elevator::choose_direction(){
 }
 
 bool Elevator::should_stop(int floor){
-	return (que.next().floor >= 0);
+	return (que.next().floor == floor);
 }
