@@ -1,4 +1,4 @@
-Exercise 5 : A working elevator
+A working elevator
 ===============================
 
  - `io.c` and `io.h` define the core functions needed to read from and write to the libComedi device
@@ -9,8 +9,4 @@ Exercise 5 : A working elevator
 The following links go to the original source:
  - The core C driver [is available here](https://github.com/TTK4145/Project/tree/master/driver).
  - The simulator [is available here](https://github.com/TTK4145/Project/tree/master/simulator).
-
-
-
-
 
