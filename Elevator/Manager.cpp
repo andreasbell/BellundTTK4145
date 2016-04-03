@@ -5,7 +5,8 @@
 #define TIME_DOOR_OPEN 3000
 
 
-Manager::Manager(){
+Manager::Manager(int ID){
+	this->ID = ID;
 	current_state = SLAVE;
 	connected = false;
 	timer.start();
@@ -33,14 +34,37 @@ void Manager::run(){
 }
 
 void Manager::message_handler(char msg[]){
+	printf("%s\n", msg);
 	switch(atoi(&msg[4])){
 		case UPDATE:
-			string_to_elevator(&msg[8], elevators[atoi(&msg[2])]);
+			if(atoi(&msg[2]) != ID){
+				string_to_elevator(&msg[8], elevators[atoi(&msg[2])]);
+			}
 			break;
 
 		case ORDER:
+			if( current_state == MASTER && msg[0] == 'N'){
+				int floor = atoi(&msg[6]);
+				int type = atoi(&msg[8]);
+				if(current_state == MASTER){
+					int best_elev = 100000000;
+					int best_time = 100000000;
+					for(auto elev = elevators.begin(); elev != elevators.end(); elev++){
+						int temp = cost_function(elev->second, floor, (elev_button_type_t)type);
+						if (temp < best_time){ 
+							best_time = temp;
+							best_elev = elev->first;
+						}
+					}
+					char order[16];
+					sprintf(order, "O,%i,%i,%i,%i", best_elev, ORDER, floor, (int)type);
+					UDP.send(order, 16);
+				}
+			}
+			else if (msg[0] == 'O'){
+				elevators[atoi(&msg[2])].add_order(atoi(&msg[6]), (elev_button_type_t)atoi(&msg[8]));
+			}
 			break;
-
 	}
 }
 
@@ -58,10 +82,16 @@ void Manager::send_status(){
 	UDP.send(out_buffer, 128);
 }
 
+void Manager::send_order(elev_button_type_t type, int floor){
+	char order[16];
+	sprintf(order, "N,%i,%i,%i,%i", ID, ORDER, floor, (int)type);
+	UDP.send(order, 16);
+}
 
-double cost_function(Elevator e, int floor){
+
+double cost_function(Elevator e, int floor, elev_button_type_t type){
 	double duration = 0;
-	//function add order to elevator
+	e.add_order(floor, type);
 	if (e.current_state == OPENDOOR){
 		duration += TIME_DOOR_OPEN/2.0;
 	}
@@ -80,3 +110,6 @@ double cost_function(Elevator e, int floor){
 		e.last_floor += e.direction;
 	}
 }
+
+
+

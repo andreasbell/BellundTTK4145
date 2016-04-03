@@ -14,14 +14,14 @@ public:
 
 	bool orders[N_FLOORS][N_BUTTONS] = {}; //{{UP}, {DOWN}, {COMMAND}}
 
+	void init();
 	bool run();
-	Elevator();
 
 	/*Help functions*/
 	int next_stop();
-	int next_stop_in_direction(elev_motor_direction_t dir);
+	int next_stop_in_direction(elev_motor_direction_t dir, int last_floor);
 
-	void poll_orders();
+	bool poll_orders(int& f, elev_button_type_t& t);
 	void add_order(int floor, elev_button_type_t type);
 	void remove_order(int floor);
 

@@ -1,6 +1,7 @@
 program_EXECUTABLE := executable
 
-#CXX = clang++-3.6
+CXX = clang++-3.6
+
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 current_path := $(abspath ../$(current_dir))

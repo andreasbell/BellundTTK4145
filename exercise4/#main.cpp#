@@ -1,0 +1,90 @@
+#include <stdio.h>
+#include <thread>
+#include "UDP_Connection.h"
+#include "TCP_Connection.h"
+
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <errno.h>
+#include <string.h>
+
+
+using namespace std;
+
+void thread_host(){
+  char buffer[1024];
+  TCP_Connection TCP(33547);
+  //TCP.connect_to("129.241.187.23");
+  TCP.connect_to("127.0.0.1");
+  //TCP.send("Connect to: 129.241.187.147:33547\0", 1024);
+
+  while(1){
+
+    printf("Type a sentence to send to server:\n");
+    fgets(buffer,1024,stdin);
+    
+    /*Send message to server*/
+    TCP.send(buffer, 1024);
+
+    /*receive message from server*/
+    TCP.receive(buffer, 1024);
+
+    printf("Received from server: %s\n",buffer);
+  }
+}
+
+void thread_server(){
+  char buffer[1024];
+  TCP_Connection TCP(33547);
+  printf("connected: %i \n",TCP.accept_connection());
+  printf("connected to: %s \n", inet_ntoa(TCP.sa_out.sin_addr));
+
+
+  while(1){
+
+    //printf("Type a sentence to send to host:\n");
+    //fgets(buffer,1024,stdin);
+    
+    /*Send message to host*/
+    //TCP.send(buffer, 1024);
+
+    /*receive message from host*/
+    if(TCP.receive(buffer, 1024) > 0){
+       printf("Received from host: %s\n",buffer);
+    }
+    else{
+      // printf("ERROR: %s\n", strerror(errno));
+    }
+  }
+}
+
+
+int main(){
+  char buffer[1024];
+  UDP_Connection UDP;
+
+
+  while(1){
+    if (UDP.error){printf("ERROR: %s\n", strerror(errno));}
+    printf("Type a sentence to send to broadcast:\n");
+    fgets(buffer,1024,stdin);
+    
+    /*Send message to server*/
+    UDP.send(buffer, 1024);
+
+    /*receive message from host*/
+    //int size = UDP.receive(buffer, 1024);
+
+    //if(size > 1){printf("Received from server: %s\n",buffer);}
+  }
+
+  thread t1(thread_server);
+  //thread t2(thread_host);
+
+  t1.join();
+  //t2.join();
+
+  return 0;
+}
