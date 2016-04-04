@@ -14,8 +14,9 @@ Manager::Manager(int ID){
 
 void Manager::run(){
 	char msg[128];
-	if(UDP.receive(msg, 128) > 0){
-		message_handler(msg);
+	int size = UDP.receive(msg, 128);
+	if(size > 0){
+		message_handler(msg, size);
 	}
 
 	switch(current_state){
@@ -30,9 +31,9 @@ void Manager::run(){
 	}
 }
 
-void Manager::message_handler(char msg[]){
-	printf("State: %s ID: %i Type: %i \n", msg[MSG_STATE] == MASTER? "M" : "S", msg[MSG_ID], msg[MSG_TYPE]);
-	if(msg[MSG_CRC] == MSG_CRC || true){
+void Manager::message_handler(char msg[], int length){
+	//printf("State: %s ID: %i Type: %i \n", msg[MSG_STATE] == MASTER? "M" : "S", msg[MSG_ID], msg[MSG_TYPE]);
+	if(msg[MSG_CRC] == CRC(msg, length)){
 		if(msg[MSG_STATE] == MASTER){
 			if(current_state == MASTER && msg[MSG_ID] != ID){current_state = SLAVE;}
 			else{timer.start();}
@@ -43,7 +44,7 @@ void Manager::message_handler(char msg[]){
 				string_to_elevator(&msg[MSG_PAYLOAD], elevators[msg[MSG_ID]]);
 				break;
 			case PROCESSED_ORDER:
-				elevators[MSG_PAYLOAD].add_order((int)msg[MSG_PAYLOAD +1], (elev_button_type_t)msg[MSG_PAYLOAD + 2]);
+				elevators[msg[MSG_PAYLOAD]].add_order((int)msg[MSG_PAYLOAD +1], (elev_button_type_t)msg[MSG_PAYLOAD + 2]);
 				break;
 			case NEW_ORDER:
 				if(current_state == MASTER){
@@ -60,6 +61,7 @@ void Manager::find_best_elevator(elev_button_type_t type, int floor, int elev_id
 	if(type != BUTTON_COMMAND){
 		for(auto elev = elevators.begin(); elev != elevators.end(); elev++){
 			int temp = cost_function(elev->second, floor, type);
+			printf("Elevator %i Duration %i\n",elev->first, temp);
 			if (temp < best_time){ 
 				best_time = temp;
 				best_elev = elev->first;
@@ -71,11 +73,11 @@ void Manager::find_best_elevator(elev_button_type_t type, int floor, int elev_id
 
 void Manager::send_status(){
 	char msg[128];
-	msg[MSG_ID] = ID;
+	msg[MSG_ID] = this->ID;
 	msg[MSG_STATE] = current_state;
 	msg[MSG_TYPE] = UPDATE;
-	msg[MSG_CRC] = MSG_CRC;
 	elevator_to_string(&msg[MSG_PAYLOAD], elevators[ID]);
+	msg[MSG_CRC] = CRC(msg, 128);
 	UDP.send(msg, 128);
 }
 
@@ -84,13 +86,22 @@ void Manager::send_order(elev_button_type_t type, int floor, int elevator, messa
 	msg[MSG_ID] = ID;
 	msg[MSG_STATE] = current_state;
 	msg[MSG_TYPE] = order_type;
-	msg[MSG_CRC] = MSG_CRC;
 	msg[MSG_PAYLOAD] = elevator;
 	msg[MSG_PAYLOAD + 1] = floor;
 	msg[MSG_PAYLOAD + 2] = (int)type;
+	msg[MSG_CRC] = CRC(msg, 8);
 	UDP.send(msg, 8);
 }
 
+int Manager::CRC(char msg[], int length){
+	int crc = 0;
+	for (int i = 0; i < length; i++){
+		if(i != MSG_CRC){
+			crc = (crc + msg[i])%256; 
+		}
+	}
+	return crc; 
+}
 
 double cost_function(Elevator e, int floor, elev_button_type_t type){
 	double duration = 0;
@@ -101,11 +112,13 @@ double cost_function(Elevator e, int floor, elev_button_type_t type){
 	else if (e.current_state == RUN){
 		duration += TIME_TRAVEL_BETWEEN_FLOORS/2.0;
 	}
+	int next = e.next_stop();
 	while(true){
-		if (e.next_stop() == e.last_floor){
+		//printf("Next: %i Last: %i\n", e.next_stop(), e.last_floor);
+		if (next == e.last_floor){
 			duration += TIME_DOOR_OPEN;
 			e.remove_order(e.last_floor);
-			if (e.next_stop() < 0){
+			if ((next = e.next_stop()) < 0){
 				return duration;
 			}
 		}

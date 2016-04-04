@@ -24,9 +24,10 @@ public:
 	Manager(int ID);
 	void run();
 	void send_status();
-	void message_handler(char msg[]);
+	void message_handler(char msg[], int length);
 	void find_best_elevator(elev_button_type_t type, int floor, int elev_id);
 	void send_order(elev_button_type_t type, int floor, int elevator, message_type order_type);
+	int CRC(char msg[], int length);
 };
 
 double cost_function(Elevator e, int floor, elev_button_type_t type);

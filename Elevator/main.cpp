@@ -18,8 +18,7 @@ void run_manager(){
 void send_status(){
 	while(true){
 		manager.send_status();
-		usleep(1000*4000);
-		manager.send_order(BUTTON_CALL_UP, 2, manager.ID, NEW_ORDER);
+		usleep(1000*200);
 	}
 }
 
@@ -38,7 +37,8 @@ void poll_orders(){
 		if (manager.elevators[manager.ID].poll_orders(f, t)){
 			manager.send_order(t, f, manager.ID, NEW_ORDER);
 		}
-		usleep(1000*100);
+		usleep(1000*10000);
+		//manager.send_order(BUTTON_CALL_DOWN, rand()%4, manager.ID, NEW_ORDER);
 	}
 }
 
