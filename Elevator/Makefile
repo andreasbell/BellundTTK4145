@@ -1,4 +1,4 @@
-program_EXECUTABLE := executable
+program_EXECUTABLE := elevator
 
 CXX = clang++-3.6
 

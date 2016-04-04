@@ -13,19 +13,16 @@ Manager::Manager(int ID){
 }
 
 void Manager::run(){
+	char msg[128];
+	if(UDP.receive(msg, 128) > 0){
+		message_handler(msg);
+	}
+
 	switch(current_state){
 		case MASTER:
-			if(UDP.receive(in_buffer, 128) > 0){
-				message_handler(in_buffer);
-				if(in_buffer[0] == 'M'){current_state = SLAVE;}
-			}
 			break;
 
 		case SLAVE:
-			if(UDP.receive(in_buffer, 128) > 0){
-				message_handler(in_buffer);
-				if(in_buffer[0] == 'M'){timer.start();}
-			}
 			if(timer.is_time_out(TIMEOUT)){
 				current_state = MASTER;
 			}
@@ -34,58 +31,64 @@ void Manager::run(){
 }
 
 void Manager::message_handler(char msg[]){
-	printf("%s\n", msg);
-	switch(atoi(&msg[4])){
-		case UPDATE:
-			if(atoi(&msg[2]) != ID){
-				string_to_elevator(&msg[8], elevators[atoi(&msg[2])]);
-			}
-			break;
+	printf("State: %s ID: %i Type: %i \n", msg[MSG_STATE] == MASTER? "M" : "S", msg[MSG_ID], msg[MSG_TYPE]);
+	if(msg[MSG_CRC] == MSG_CRC || true){
+		if(msg[MSG_STATE] == MASTER){
+			if(current_state == MASTER && msg[MSG_ID] != ID){current_state = SLAVE;}
+			else{timer.start();}
+		}
 
-		case ORDER:
-			if( current_state == MASTER && msg[0] == 'N'){
-				int floor = atoi(&msg[6]);
-				int type = atoi(&msg[8]);
+		switch(msg[MSG_TYPE]){
+			case UPDATE:
+				string_to_elevator(&msg[MSG_PAYLOAD], elevators[msg[MSG_ID]]);
+				break;
+			case PROCESSED_ORDER:
+				elevators[MSG_PAYLOAD].add_order((int)msg[MSG_PAYLOAD +1], (elev_button_type_t)msg[MSG_PAYLOAD + 2]);
+				break;
+			case NEW_ORDER:
 				if(current_state == MASTER){
-					int best_elev = 100000000;
-					int best_time = 100000000;
-					for(auto elev = elevators.begin(); elev != elevators.end(); elev++){
-						int temp = cost_function(elev->second, floor, (elev_button_type_t)type);
-						if (temp < best_time){ 
-							best_time = temp;
-							best_elev = elev->first;
-						}
-					}
-					char order[16];
-					sprintf(order, "O,%i,%i,%i,%i", best_elev, ORDER, floor, (int)type);
-					UDP.send(order, 16);
+					find_best_elevator((elev_button_type_t)msg[MSG_PAYLOAD + 2], (int)msg[MSG_PAYLOAD + 1], (int)msg[MSG_ID]);
 				}
-			}
-			else if (msg[0] == 'O'){
-				elevators[atoi(&msg[2])].add_order(atoi(&msg[6]), (elev_button_type_t)atoi(&msg[8]));
-			}
-			break;
+				break;
+		}
 	}
+}
+
+void Manager::find_best_elevator(elev_button_type_t type, int floor, int elev_id){
+	int best_elev = elev_id;
+	int best_time = 100000000;
+	if(type != BUTTON_COMMAND){
+		for(auto elev = elevators.begin(); elev != elevators.end(); elev++){
+			int temp = cost_function(elev->second, floor, type);
+			if (temp < best_time){ 
+				best_time = temp;
+				best_elev = elev->first;
+			}
+		}
+	}
+	send_order(type, floor, best_elev, PROCESSED_ORDER);
 }
 
 void Manager::send_status(){
-	switch(current_state){
-		case MASTER:
-			sprintf(out_buffer, "M,%i,%i", ID, UPDATE);
-			break;
-
-		case SLAVE:
-			sprintf(out_buffer, "S,%i,%i", ID, UPDATE);
-			break;
-	}
-	elevator_to_string(&out_buffer[8], elevators[ID]);
-	UDP.send(out_buffer, 128);
+	char msg[128];
+	msg[MSG_ID] = ID;
+	msg[MSG_STATE] = current_state;
+	msg[MSG_TYPE] = UPDATE;
+	msg[MSG_CRC] = MSG_CRC;
+	elevator_to_string(&msg[MSG_PAYLOAD], elevators[ID]);
+	UDP.send(msg, 128);
 }
 
-void Manager::send_order(elev_button_type_t type, int floor){
-	char order[16];
-	sprintf(order, "N,%i,%i,%i,%i", ID, ORDER, floor, (int)type);
-	UDP.send(order, 16);
+void Manager::send_order(elev_button_type_t type, int floor, int elevator, message_type order_type){
+	char msg[8];
+	msg[MSG_ID] = ID;
+	msg[MSG_STATE] = current_state;
+	msg[MSG_TYPE] = order_type;
+	msg[MSG_CRC] = MSG_CRC;
+	msg[MSG_PAYLOAD] = elevator;
+	msg[MSG_PAYLOAD + 1] = floor;
+	msg[MSG_PAYLOAD + 2] = (int)type;
+	UDP.send(msg, 8);
 }
 
 

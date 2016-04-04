@@ -1,19 +1,22 @@
 #pragma once
 #include "elev.h"
-#include <vector>
 #include "Timer.h"
+#include <mutex>
 
 typedef enum { RUN, IDLE, OPENDOOR, EMERGENCY }elevator_state;
 
 class Elevator{
 public:
+	/*State*/
 	elevator_state current_state;
 	elev_motor_direction_t direction;
 	int last_floor;
 	Timer timer;
 
-	bool orders[N_FLOORS][N_BUTTONS] = {}; //{{UP}, {DOWN}, {COMMAND}}
+	/*Orders*/
+	bool orders[N_FLOORS][N_BUTTONS] = {};
 
+	/*Elevator functions*/
 	void init();
 	bool run();
 

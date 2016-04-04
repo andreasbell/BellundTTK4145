@@ -6,15 +6,14 @@
 #include <map>
 
 typedef enum {MASTER, SLAVE}manager_state;
-typedef enum {UPDATE, ORDER}message_type;
+typedef enum {UPDATE, NEW_ORDER, PROCESSED_ORDER}message_type;
+typedef enum {MSG_ID, MSG_STATE, MSG_TYPE, MSG_CRC, MSG_PAYLOAD}message_frame;
 
 class Manager{
 private:
 	Timer timer;
 	int connected;
 	UDP_Connection UDP;
-	char out_buffer[128];
-	char in_buffer[128];
 
 
 public:
@@ -24,9 +23,10 @@ public:
 
 	Manager(int ID);
 	void run();
-	void message_handler(char msg[]);
 	void send_status();
-	void send_order(elev_button_type_t type, int floor);
+	void message_handler(char msg[]);
+	void find_best_elevator(elev_button_type_t type, int floor, int elev_id);
+	void send_order(elev_button_type_t type, int floor, int elevator, message_type order_type);
 };
 
 double cost_function(Elevator e, int floor, elev_button_type_t type);
