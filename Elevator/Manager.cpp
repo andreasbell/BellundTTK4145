@@ -32,10 +32,10 @@ void Manager::run(){
 }
 
 void Manager::message_handler(char msg[], int length){
-	//printf("State: %s ID: %i Type: %i \n", msg[MSG_STATE] == MASTER? "M" : "S", msg[MSG_ID], msg[MSG_TYPE]);
+	printf("State: %s ID: %i Type: %i \n", msg[MSG_STATE] == MASTER? "M" : "S", msg[MSG_ID], msg[MSG_TYPE]);
 	if(msg[MSG_CRC] == CRC(msg, length)){
 		if(msg[MSG_STATE] == MASTER){
-			if(current_state == MASTER && msg[MSG_ID] != ID){current_state = SLAVE;}
+			if(current_state == MASTER && msg[MSG_ID] < ID){current_state = SLAVE;}
 			else{timer.start();}
 		}
 
@@ -113,8 +113,9 @@ double cost_function(Elevator e, int floor, elev_button_type_t type){
 		duration += TIME_TRAVEL_BETWEEN_FLOORS/2.0;
 	}
 	int next = e.next_stop();
+	e.current_state = RUN;
 	while(true){
-		//printf("Next: %i Last: %i\n", e.next_stop(), e.last_floor);
+		printf("Next: %i Last: %i\n", e.next_stop(), e.last_floor);
 		if (next == e.last_floor){
 			duration += TIME_DOOR_OPEN;
 			e.remove_order(e.last_floor);
@@ -126,6 +127,3 @@ double cost_function(Elevator e, int floor, elev_button_type_t type){
 		e.last_floor += e.direction;
 	}
 }
-
-
-

@@ -6,9 +6,33 @@
 #include "Elevator.h"
 #include "Manager.h"
 
-Manager manager(1);
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <net/if.h>
+#include <arpa/inet.h>
+
+int get_ip(){
+    struct ifreq ifr;
+
+    int fd = socket(AF_INET, SOCK_DGRAM, 0);
+    ifr.ifr_addr.sa_family = AF_INET;
+    strncpy(ifr.ifr_name, "wlp9s0", IFNAMSIZ-1);
+    ioctl(fd, SIOCGIFADDR, &ifr);
+    close(fd);
+
+    /* Las byte of IP */
+    return (((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr.s_addr >> 8*3)%256;
+}
+
+Manager manager(get_ip());
 
 void run_manager(){
+	get_ip();
 	while(true){
 		manager.run();
 		usleep(1000);
@@ -37,8 +61,7 @@ void poll_orders(){
 		if (manager.elevators[manager.ID].poll_orders(f, t)){
 			manager.send_order(t, f, manager.ID, NEW_ORDER);
 		}
-		usleep(1000*10000);
-		//manager.send_order(BUTTON_CALL_DOWN, rand()%4, manager.ID, NEW_ORDER);
+		usleep(1000*100);
 	}
 }
 
