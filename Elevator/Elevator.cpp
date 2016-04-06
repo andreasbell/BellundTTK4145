@@ -140,10 +140,8 @@ bool Elevator::run(){
 
 int Elevator::next_stop(){
 	if(current_state == IDLE || current_state == OPENDOOR){
-		for (int order_type = 0; order_type < N_BUTTONS; order_type++){
-			if (orders[last_floor][order_type]){
-				return last_floor;
-			}
+		if (orders[last_floor][BUTTON_COMMAND] || orders[last_floor][BUTTON_CALL_DOWN] || orders[last_floor][BUTTON_CALL_UP]){
+			return last_floor;
 		}
 	}
 
@@ -181,13 +179,10 @@ bool Elevator::poll_orders(int& f, elev_button_type_t& t){
 	for(int floor = 0; floor < N_FLOORS; floor++){
 		for(int button_type = 0; button_type < N_BUTTONS; button_type++){
 			if(!(floor == 0 && button_type == BUTTON_CALL_DOWN) && !(floor == N_FLOORS-1 && button_type == BUTTON_CALL_UP)){
-				if((bool)elev_get_button_signal((elev_button_type_t)button_type, floor)){
-					if(!orders[floor][button_type]){
-						//add_order(floor, (elev_button_type_t)button_type);
-						f = floor; 
-						t = (elev_button_type_t)button_type;
-						return true;
-					}
+				if((bool)elev_get_button_signal((elev_button_type_t)button_type, floor) && !orders[floor][button_type]){
+					f = floor; 
+					t = (elev_button_type_t)button_type;
+					return true;
 				}
 			}	
 		}	

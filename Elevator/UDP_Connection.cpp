@@ -52,8 +52,6 @@ void UDP_Connection::init(int port, char ip[], bool multicast){
 int UDP_Connection::send(char message[], int length){
 	/*Send and return num charracters sent*/
 	return sendto(sock,message,length,0,(struct sockaddr *)&sa_out, sizeof sa_out);
-
-
 }
 
 int UDP_Connection::receive(char message[], int length){
