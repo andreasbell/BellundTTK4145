@@ -139,7 +139,8 @@ double cost_function(Elevator e, int floor, elev_button_type_t type){
 		if (next == e.last_floor){
 			duration += TIME_DOOR_OPEN;
 			e.remove_order(e.last_floor);
-			if ((next = e.next_stop()) < 0){
+			next = e.next_stop();
+			if (next < 0){
 				return duration;
 			}
 		}

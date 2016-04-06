@@ -54,12 +54,19 @@ void run_elevator(){
 	}
 }
 
-void poll_orders(){
+void poll_orders_and_set_order_lights(){
 	int f;
 	elev_button_type_t t;
 	while(true){
 		if (manager.elevators[manager.ID].first.poll_orders(f, t)){
 			manager.send_order(t, f, manager.ID, NEW_ORDER);
+		}
+		for(auto elev = manager.elevators.begin(); elev != manager.elevators.end(); elev++){
+			elev->second.first.set_order_lights(BUTTON_CALL_UP);
+			elev->second.first.set_order_lights(BUTTON_CALL_DOWN);
+			if(elev->first == manager.ID){
+				elev->second.first.set_order_lights(BUTTON_COMMAND);
+			}
 		}
 		usleep(1000*100);
 	}
@@ -73,7 +80,7 @@ int main(){
 	std::thread t1(run_manager);
 	std::thread t2(check_and_send_status);
 	std::thread t3(run_elevator);
-	std::thread t4(poll_orders);
+	std::thread t4(poll_orders_and_set_order_lights);
 
 	t1.join();
 	t2.join();

@@ -135,7 +135,6 @@ bool Elevator::run(){
 		else {fsm_emergency();}
 		break;
 	}
-	
 	return true;
 }
 
@@ -182,15 +181,20 @@ int Elevator::next_stop_in_direction(elev_motor_direction_t dir, int last_floor)
 
 void Elevator::add_order(int floor, elev_button_type_t type){
 	orders[floor][type] = true;
-	elev_set_button_lamp((elev_button_type_t)type, floor, true);
 }
 
 void Elevator::remove_order(int floor){
 	for (int type = 0; type < N_BUTTONS; ++type){
 		orders[floor][type] = false;
-		elev_set_button_lamp((elev_button_type_t)type, floor, false);
 	}
 }
+
+void Elevator::set_order_lights(elev_button_type_t type){
+	for (int floor = 0; floor < N_FLOORS; ++floor){
+			elev_set_button_lamp(type, floor, orders[floor][type]);
+	}
+}
+
 
 bool Elevator::poll_orders(int& f, elev_button_type_t& t){
 	for(int floor = 0; floor < N_FLOORS; floor++){
