@@ -139,7 +139,6 @@ bool Elevator::run(){
 }
 
 int Elevator::next_stop(){
-	int next;
 	if(current_state == IDLE || current_state == OPENDOOR){
 		for (int order_type = 0; order_type < N_BUTTONS; order_type++){
 			if (orders[last_floor][order_type]){
@@ -148,13 +147,15 @@ int Elevator::next_stop(){
 		}
 	}
 
-	int loop_position = 2;
+	int loop_position = (direction == DIRN_UP)? last_floor + direction: last_floor + direction + N_FLOORS;
 	for(int count = 0; count < 2*N_FLOORS; count++){
 		int floor = ((count + loop_position)/N_FLOORS%2)? N_FLOORS -1 - (count + loop_position)%N_FLOORS : (count + loop_position)%N_FLOORS;
 		int type = (count + loop_position)/N_FLOORS%2;
+		if(orders[floor][type] || orders[floor][BUTTON_COMMAND]){
+			direction = (floor < last_floor)? DIRN_DOWN : DIRN_UP;
+			return floor;
+		}
 	}
-	
-	//Remember to set direction
 
 	return -1;
 }

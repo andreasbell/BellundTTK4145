@@ -72,6 +72,26 @@ void poll_orders_and_set_order_lights(){
 	}
 }
 
+void print_status(){
+	printf("\n");
+	while(true){
+		int num_elevators = 1;
+		for(auto elev = manager.elevators.begin(); elev != manager.elevators.end(); elev++){
+			printf("Current state: %s\n", manager.current_state == MASTER? "MASTER" : "SLAVE");
+			printf("\tID: %i ", elev->first);
+			printf("Timeout: %s ", elev->second.second.is_time_out(2)? "yes" : "no");
+			printf("Last floor: %i ", elev->second.first.last_floor);
+			printf("Next floor: %i \n", elev->second.first.next_stop());
+			num_elevators++;
+		}
+		for (int i = 0; i < num_elevators; ++i){
+			printf("\x1b[A");
+		}
+
+		usleep(1000*200);
+	}
+}
+
 
 
 int main(){
@@ -81,11 +101,13 @@ int main(){
 	std::thread t2(check_and_send_status);
 	std::thread t3(run_elevator);
 	std::thread t4(poll_orders_and_set_order_lights);
+	std::thread t5(print_status);
 
 	t1.join();
 	t2.join();
 	t3.join();
 	t4.join();
+	t5.join();
 
 	return 0;
 }

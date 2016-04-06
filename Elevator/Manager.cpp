@@ -32,8 +32,8 @@ void Manager::run(){
 }
 
 void Manager::message_handler(char msg[], int length){
-	printf("State: %s ID: %i Type: %i \n", msg[MSG_STATE] == MASTER? "M" : "S", msg[MSG_ID], msg[MSG_TYPE]);
 	if(msg[MSG_CRC] == CRC(msg, length)){
+		//printf("State: %s ID: %i Type: %i \n", msg[MSG_STATE] == MASTER? "M" : "S", msg[MSG_ID], msg[MSG_TYPE]);
 		if(msg[MSG_STATE] == MASTER){
 			if(current_state == MASTER && msg[MSG_ID] < ID){current_state = SLAVE;}
 			else{timer.start();}
@@ -62,7 +62,7 @@ void Manager::find_best_elevator(elev_button_type_t type, int floor, int elev_id
 	if(type != BUTTON_COMMAND){
 		for(auto elev = elevators.begin(); elev != elevators.end(); elev++){
 			int temp = cost_function(elev->second.first, floor, type);
-			printf("Elevator %i Duration %i\n",elev->first, temp);
+			//printf("Elevator %i Duration %i\n",elev->first, temp);
 			if (temp < best_time && !elev->second.second.is_time_out(TIMEOUT)){ 
 				best_time = temp;
 				best_elev = elev->first;
@@ -135,7 +135,7 @@ double cost_function(Elevator e, int floor, elev_button_type_t type){
 	int next = e.next_stop();
 	e.current_state = RUN;
 	while(true){
-		printf("Next: %i Last: %i\n", e.next_stop(), e.last_floor);
+		//printf("Next: %i Last: %i\n", e.next_stop(), e.last_floor);
 		if (next == e.last_floor){
 			duration += TIME_DOOR_OPEN;
 			e.remove_order(e.last_floor);
