@@ -21,18 +21,17 @@ int get_ip(){
 
     int fd = socket(AF_INET, SOCK_DGRAM, 0);
     ifr.ifr_addr.sa_family = AF_INET;
-    strncpy(ifr.ifr_name, "wlp9s0", IFNAMSIZ-1);
+    strncpy(ifr.ifr_name, "eth0", IFNAMSIZ-1);
     ioctl(fd, SIOCGIFADDR, &ifr);
     close(fd);
 
     /* Las byte of IP */
-    return (((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr.s_addr >> 8*3)%256;
+    return (((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr.s_addr >> 8*3)%128;
 }
 
 Manager manager(get_ip());
 
 void run_manager(){
-	get_ip();
 	while(true){
 		manager.run();
 		usleep(1000);
@@ -47,7 +46,7 @@ void send_status(){
 }
 
 void run_elevator(){
-	//manager.elevators[manager.ID].init();
+	manager.elevators[manager.ID].init();
 	while(true){
 		manager.elevators[manager.ID].run();
 		usleep(1000);
