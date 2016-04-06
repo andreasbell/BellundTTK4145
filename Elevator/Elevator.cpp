@@ -165,14 +165,10 @@ int Elevator::next_stop(){
 	if(next >= 0) return next;
 	*/
 
-	int floor = last_floor;
+	int loop_position = 2;
 	for(int count = 0; count < 2*N_FLOORS; count++){
-		int floor = (count/N_FLOORS)? N_FLOORS -1 - count%N_FLOORS : count%N_FLOORS;
-		orders[count%N_FLOORS][]
-
-		floor += direction;
-
-		printf("i\n", floor);
+		int floor = ((count + loop_position)/N_FLOORS%2)? N_FLOORS -1 - (count + loop_position)%N_FLOORS : (count + loop_position)%N_FLOORS;
+		int type = (count + loop_position)/N_FLOORS%2;
 	}
 
 	return -1;
