@@ -76,7 +76,7 @@ void print_status(){
 	printf("\n");
 	while(true){
 		int num_elevators = 1;
-		printf("Current state: %s\n", manager.current_state == MASTER? "MASTER" : "SLAVE");
+		printf("Current state: %s ID: %i  \n", manager.current_state == MASTER? "MASTER" : "SLAVE", manager.ID);
 		for(auto elev = manager.elevators.begin(); elev != manager.elevators.end(); elev++){
 			printf("\tID: %i ", elev->first);
 			printf("Timeout: %s ", elev->second.second.is_time_out(2)? "yes" : "no");
