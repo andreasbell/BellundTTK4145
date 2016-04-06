@@ -22,7 +22,6 @@ public:
 
 	/*Help functions*/
 	int next_stop();
-	int next_stop_in_direction(elev_motor_direction_t dir, int last_floor);
 
 	bool poll_orders(int& f, elev_button_type_t& t);
 	void add_order(int floor, elev_button_type_t type);
