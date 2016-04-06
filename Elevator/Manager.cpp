@@ -41,10 +41,11 @@ void Manager::message_handler(char msg[], int length){
 
 		switch(msg[MSG_TYPE]){
 			case UPDATE:
-				string_to_elevator(&msg[MSG_PAYLOAD], elevators[msg[MSG_ID]]);
+				elevators[msg[MSG_ID]].second.start();
+				string_to_elevator(&msg[MSG_PAYLOAD], elevators[msg[MSG_ID]].first);
 				break;
 			case PROCESSED_ORDER:
-				elevators[msg[MSG_PAYLOAD]].add_order((int)msg[MSG_PAYLOAD +1], (elev_button_type_t)msg[MSG_PAYLOAD + 2]);
+				elevators[msg[MSG_PAYLOAD]].first.add_order((int)msg[MSG_PAYLOAD +1], (elev_button_type_t)msg[MSG_PAYLOAD + 2]);
 				break;
 			case NEW_ORDER:
 				if(current_state == MASTER){
@@ -60,9 +61,9 @@ void Manager::find_best_elevator(elev_button_type_t type, int floor, int elev_id
 	int best_time = 100000000;
 	if(type != BUTTON_COMMAND){
 		for(auto elev = elevators.begin(); elev != elevators.end(); elev++){
-			int temp = cost_function(elev->second, floor, type);
+			int temp = cost_function(elev->second.first, floor, type);
 			printf("Elevator %i Duration %i\n",elev->first, temp);
-			if (temp < best_time){ 
+			if (temp < best_time && !elev->second.second.is_time_out(TIMEOUT)){ 
 				best_time = temp;
 				best_elev = elev->first;
 			}
@@ -76,7 +77,7 @@ void Manager::send_status(){
 	msg[MSG_ID] = this->ID;
 	msg[MSG_STATE] = current_state;
 	msg[MSG_TYPE] = UPDATE;
-	elevator_to_string(&msg[MSG_PAYLOAD], elevators[ID]);
+	elevator_to_string(&msg[MSG_PAYLOAD], elevators[ID].first);
 	msg[MSG_CRC] = CRC(msg, 128);
 	UDP.send(msg, 128);
 }
@@ -101,6 +102,25 @@ int Manager::CRC(char msg[], int length){
 		}
 	}
 	return crc; 
+}
+
+void Manager::check_timeout(){
+	for(auto elev = elevators.begin(); elev != elevators.end(); elev++){
+		if (elev->second.second.is_time_out(TIMEOUT)){
+			if(current_state == MASTER){ //Redistribute orders
+				for (int i = 0; i < N_FLOORS; ++i){
+					if(elev->second.first.orders[i][BUTTON_CALL_UP]){
+						elev->second.first.orders[i][BUTTON_CALL_UP] = false;
+						find_best_elevator(BUTTON_CALL_UP, i, ID);
+					}
+					if(elev->second.first.orders[i][BUTTON_CALL_DOWN]){
+						elev->second.first.orders[i][BUTTON_CALL_UP] = false;
+						find_best_elevator(BUTTON_CALL_DOWN, i, ID);
+					}
+				}
+			}
+		}
+	}
 }
 
 double cost_function(Elevator e, int floor, elev_button_type_t type){

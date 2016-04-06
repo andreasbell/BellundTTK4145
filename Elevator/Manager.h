@@ -4,6 +4,7 @@
 #include "Timer.h"
 #include "UDP_Connection.h"
 #include <map>
+#include <utility>
 
 typedef enum {MASTER, SLAVE}manager_state;
 typedef enum {UPDATE, NEW_ORDER, PROCESSED_ORDER}message_type;
@@ -18,7 +19,7 @@ private:
 
 public:
 	manager_state current_state;
-	std::map<int, Elevator> elevators;
+	std::map<int, std::pair<Elevator, Timer>> elevators;
 	int ID = 0;
 
 	Manager(int ID);
@@ -28,6 +29,7 @@ public:
 	void find_best_elevator(elev_button_type_t type, int floor, int elev_id);
 	void send_order(elev_button_type_t type, int floor, int elevator, message_type order_type);
 	int CRC(char msg[], int length);
+	void check_timeout();
 };
 
 double cost_function(Elevator e, int floor, elev_button_type_t type);

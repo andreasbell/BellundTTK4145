@@ -38,17 +38,18 @@ void run_manager(){
 	}
 }
 
-void send_status(){
+void check_and_send_status(){
 	while(true){
 		manager.send_status();
+		manager.check_timeout();
 		usleep(1000*200);
 	}
 }
 
 void run_elevator(){
-	manager.elevators[manager.ID].init();
+	manager.elevators[manager.ID].first.init();
 	while(true){
-		manager.elevators[manager.ID].run();
+		manager.elevators[manager.ID].first.run();
 		usleep(1000);
 	}
 }
@@ -57,7 +58,7 @@ void poll_orders(){
 	int f;
 	elev_button_type_t t;
 	while(true){
-		if (manager.elevators[manager.ID].poll_orders(f, t)){
+		if (manager.elevators[manager.ID].first.poll_orders(f, t)){
 			manager.send_order(t, f, manager.ID, NEW_ORDER);
 		}
 		usleep(1000*100);
@@ -70,7 +71,7 @@ int main(){
 	printf("ELEVATOR PROGRAM STARTED\n");
 
 	std::thread t1(run_manager);
-	std::thread t2(send_status);
+	std::thread t2(check_and_send_status);
 	std::thread t3(run_elevator);
 	std::thread t4(poll_orders);
 
