@@ -98,7 +98,7 @@ int Manager::CRC(char msg[], int length){
 	int crc = 0;
 	for (int i = 0; i < length; i++){
 		if(i != MSG_CRC){
-			crc = (crc + msg[i])%256; 
+			crc = (crc + msg[i])%128; 
 		}
 	}
 	return crc; 
