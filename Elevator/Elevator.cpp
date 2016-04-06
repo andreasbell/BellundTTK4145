@@ -147,6 +147,7 @@ int Elevator::next_stop(){
 			}
 		}
 	}
+	/*
 
 	for (int i = 0; i < 2; i++){ //Check orders in both directions
 		next = next_stop_in_direction(direction, last_floor);
@@ -156,12 +157,24 @@ int Elevator::next_stop(){
 		direction = direction != DIRN_DOWN ? DIRN_DOWN : DIRN_UP;
 	}
 
-	for (int i = 0; i < N_FLOORS; i++){
-		if (orders[i][BUTTON_CALL_DOWN] || orders[i][BUTTON_CALL_UP]){ 
-			direction = i > last_floor ? DIRN_UP : DIRN_DOWN;
-			return i;
-		}
+	next = next_stop_in_direction(DIRN_DOWN, N_FLOORS-1);
+	direction = DIRN_UP;
+	if(next >= 0) return next;
+	next = next_stop_in_direction(DIRN_UP, 0);
+	direction = DIRN_DOWN;
+	if(next >= 0) return next;
+	*/
+
+	int floor = last_floor;
+	for(int count = 0; count < 2*N_FLOORS; count++){
+		int floor = (count/N_FLOORS)? N_FLOORS -1 - count%N_FLOORS : count%N_FLOORS;
+		orders[count%N_FLOORS][]
+
+		floor += direction;
+
+		printf("i\n", floor);
 	}
+
 	return -1;
 }
 
@@ -176,6 +189,8 @@ int Elevator::next_stop_in_direction(elev_motor_direction_t dir, int last_floor)
 			}
 		}
 	}
+	//if(dir == DIRN_UP && orders[N_FLOORS-1][BUTTON_CALL_DOWN]){ return N_FLOORS -1;}
+	//if(dir == DIRN_DOWN && orders[0][BUTTON_CALL_UP]){ return 0;}
 	return -1;
 }
 
