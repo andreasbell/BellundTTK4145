@@ -40,9 +40,14 @@ void Manager::message_handler(char msg[], int length){
 		}
 
 		switch(msg[MSG_TYPE]){
-			case UPDATE:
+			case STATUS:
 				elevators[msg[MSG_ID]].second.start();
 				string_to_elevator(&msg[MSG_PAYLOAD], elevators[msg[MSG_ID]].first);
+				break;
+			case STATUS_REQUEST:
+				if(current_state == MASTER){
+					send_status(msg[MSG_PAYLOAD]);
+				}
 				break;
 			case PROCESSED_ORDER:
 				elevators[msg[MSG_PAYLOAD]].first.add_order((int)msg[MSG_PAYLOAD +1], (elev_button_type_t)msg[MSG_PAYLOAD + 2]);
@@ -72,14 +77,24 @@ void Manager::find_best_elevator(elev_button_type_t type, int floor, int elev_id
 	send_order(type, floor, best_elev, PROCESSED_ORDER);
 }
 
-void Manager::send_status(){
+void Manager::send_status(int id){
 	char msg[128];
-	msg[MSG_ID] = this->ID;
+	msg[MSG_ID] = id;
 	msg[MSG_STATE] = current_state;
-	msg[MSG_TYPE] = UPDATE;
-	elevator_to_string(&msg[MSG_PAYLOAD], elevators[ID].first);
+	msg[MSG_TYPE] = STATUS;
+	elevator_to_string(&msg[MSG_PAYLOAD], elevators[id].first);
 	msg[MSG_CRC] = CRC(msg, 128);
 	UDP.send(msg, 128);
+}
+
+void Manager::send_status_request(int id){
+	char msg[6];
+	msg[MSG_ID] = this->ID;
+	msg[MSG_STATE] = current_state;
+	msg[MSG_TYPE] = STATUS_REQUEST;
+	msg[MSG_PAYLOAD] = id;
+	msg[MSG_CRC] = CRC(msg, 6);
+	UDP.send(msg, 6);
 }
 
 void Manager::send_order(elev_button_type_t type, int floor, int elevator, message_type order_type){

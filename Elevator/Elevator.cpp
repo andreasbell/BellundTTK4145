@@ -1,6 +1,8 @@
 
 #include "Elevator.h"
 
+#define DOOR_OPEN_TIME 3
+
 void Elevator::init(){
 	elev_init(); //Returns false if it fails
 	direction = DIRN_DOWN;
@@ -125,8 +127,8 @@ bool Elevator::run(){
 
 	case OPENDOOR:
 		if (elev_get_stop_signal()){fsm_emergency();}
-		else if (timer.is_time_out(3) && next >= 0){fsm_run();}
-		else if (timer.is_time_out(3) && next < 0){fsm_idle();}
+		else if (timer.is_time_out(DOOR_OPEN_TIME) && next >= 0){fsm_run();}
+		else if (timer.is_time_out(DOOR_OPEN_TIME) && next < 0){fsm_idle();}
 		else {fsm_opendoor();}
 		break;
 

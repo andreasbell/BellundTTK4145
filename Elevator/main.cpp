@@ -39,8 +39,10 @@ void run_manager(){
 }
 
 void check_and_send_status(){
+	manager.send_status_request(manager.ID);
+	usleep(1000*200);
 	while(true){
-		manager.send_status();
+		manager.send_status(manager.ID);
 		manager.check_timeout();
 		usleep(1000*200);
 	}
