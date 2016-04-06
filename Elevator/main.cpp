@@ -76,12 +76,13 @@ void print_status(){
 	printf("\n");
 	while(true){
 		int num_elevators = 1;
+		printf("Current state: %s\n", manager.current_state == MASTER? "MASTER" : "SLAVE");
 		for(auto elev = manager.elevators.begin(); elev != manager.elevators.end(); elev++){
-			printf("Current state: %s\n", manager.current_state == MASTER? "MASTER" : "SLAVE");
 			printf("\tID: %i ", elev->first);
 			printf("Timeout: %s ", elev->second.second.is_time_out(2)? "yes" : "no");
 			printf("Last floor: %i ", elev->second.first.last_floor);
-			printf("Next floor: %i \n", elev->second.first.next_stop());
+			printf("Next floor: %i ", elev->second.first.next_stop());
+			printf("      \n");
 			num_elevators++;
 		}
 		for (int i = 0; i < num_elevators; ++i){
