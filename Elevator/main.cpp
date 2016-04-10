@@ -39,9 +39,11 @@ void run_manager(){
 }
 
 void check_and_send_status(){
+	recover_file_backup(manager.elevators[manager.ID].elevator);
 	manager.send_status_request(manager.ID);
 	usleep(1000*200);
 	while(true){
+		create_file_backup(manager.elevators[manager.ID].elevator);
 		manager.send_status(manager.ID);
 		manager.check_timeout();
 		usleep(1000*200);

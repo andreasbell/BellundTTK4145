@@ -39,3 +39,5 @@ public:
 };
 
 double cost_function(Elevator e, int floor, elev_button_type_t type);
+void create_file_backup(Elevator& elev);
+void recover_file_backup(Elevator& elev);

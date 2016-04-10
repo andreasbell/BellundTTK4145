@@ -1,3 +1,4 @@
+#include <fstream>
 #include "Manager.h"
 
 #define TIMEOUT 2
@@ -18,7 +19,6 @@ void Manager::run(){
 	if(size > 0){
 		message_handler(msg, size);
 	}
-
 	switch(current_state){
 		case MASTER:
 			break;
@@ -135,6 +135,32 @@ void Manager::check_timeout(){
 		}
 	}
 }
+
+void create_file_backup(Elevator& elev){
+	std::ofstream file("BACKUP.dat");
+	if(!file.fail()){
+		char buffer[128];
+		elevator_to_string(buffer, elev);
+		for (int i = 0; i < 128; i++){
+			file << buffer[i];
+		}
+		file.close();
+	} 
+}
+
+void recover_file_backup(Elevator& elev){
+	std::ifstream file("BACKUP.dat");
+	if(!file.fail()){
+		char buffer[128];
+		int i = 0;
+		while (!file.eof()){
+			file >> buffer[i++];
+		}
+		string_to_elevator(buffer, elev);
+		file.close();
+	} 
+}
+
 
 double cost_function(Elevator e, int floor, elev_button_type_t type){
 	double duration = 0;
