@@ -63,7 +63,7 @@ void poll_orders_and_set_order_lights(){
 		if (manager.elevators[manager.ID].first.poll_orders(f, t)){
 			manager.send_order(t, f, manager.ID, NEW_ORDER);
 		}
-		for(auto elev = manager.elevators.begin(); elev != manager.elevators.end(); elev++){
+		for(auto elev = manager.elevators.begin(); elev != manager.elevators.end(); ++elev){
 			elev->second.first.set_order_lights(BUTTON_CALL_UP);
 			elev->second.first.set_order_lights(BUTTON_CALL_DOWN);
 			if(elev->first == manager.ID){
