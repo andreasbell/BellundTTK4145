@@ -121,17 +121,15 @@ int Manager::CRC(char msg[], int length){
 
 void Manager::check_timeout(){
 	for(auto elev = elevators.begin(); elev != elevators.end(); elev++){
-		if (elev->second.second.is_time_out(TIMEOUT)){
-			if(current_state == MASTER){ //Redistribute orders
-				for (int i = 0; i < N_FLOORS; ++i){
-					if(elev->second.first.orders[i][BUTTON_CALL_UP]){
-						elev->second.first.orders[i][BUTTON_CALL_UP] = false;
-						find_best_elevator(BUTTON_CALL_UP, i, ID);
-					}
-					if(elev->second.first.orders[i][BUTTON_CALL_DOWN]){
-						elev->second.first.orders[i][BUTTON_CALL_UP] = false;
-						find_best_elevator(BUTTON_CALL_DOWN, i, ID);
-					}
+		if (elev->second.second.is_time_out(TIMEOUT)){ //Redistribute orders
+			for (int i = 0; i < N_FLOORS; ++i){
+				if(elev->second.first.orders[i][BUTTON_CALL_UP]){
+					elev->second.first.orders[i][BUTTON_CALL_UP] = false;
+					if(current_state == MASTER){ find_best_elevator(BUTTON_CALL_UP, i, ID);}
+				}
+				if(elev->second.first.orders[i][BUTTON_CALL_DOWN]){
+					elev->second.first.orders[i][BUTTON_CALL_UP] = false;
+					if(current_state == MASTER){ find_best_elevator(BUTTON_CALL_DOWN, i, ID);}
 				}
 			}
 		}
