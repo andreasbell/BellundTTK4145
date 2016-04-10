@@ -10,6 +10,11 @@ typedef enum {MASTER, SLAVE}manager_state;
 typedef enum {STATUS, STATUS_REQUEST, NEW_ORDER, PROCESSED_ORDER}message_type;
 typedef enum {MSG_ID, MSG_STATE, MSG_TYPE, MSG_CRC, MSG_PAYLOAD}message_frame;
 
+struct elev_timer_pair {
+	Elevator elevator;
+	Timer udp_timeout;
+};
+
 class Manager{
 private:
 	Timer timer;
@@ -19,7 +24,7 @@ private:
 
 public:
 	manager_state current_state;
-	std::map<int, std::pair<Elevator, Timer>> elevators;
+	std::map<int, elev_timer_pair> elevators;
 	int ID = 0;
 
 	Manager(int ID);

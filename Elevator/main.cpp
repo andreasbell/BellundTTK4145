@@ -49,9 +49,9 @@ void check_and_send_status(){
 }
 
 void run_elevator(){
-	manager.elevators[manager.ID].first.init();
+	manager.elevators[manager.ID].elevator.init();
 	while(true){
-		manager.elevators[manager.ID].first.run();
+		manager.elevators[manager.ID].elevator.run();
 		usleep(1000);
 	}
 }
@@ -61,21 +61,21 @@ void poll_orders_and_set_order_lights(){
 	elev_button_type_t type;
 	bool lights[N_FLOORS][N_BUTTONS] = {};
 	while(true){
-		if (manager.elevators[manager.ID].first.poll_orders(floor, type)){
+		if (manager.elevators[manager.ID].elevator.poll_orders(floor, type)){
 			manager.send_order(type, floor, manager.ID, NEW_ORDER);
 		}
 		for (int f = 0; f < N_FLOORS; ++f){
 			for (int t = 0; t < N_BUTTONS; ++t){
 				bool on = false;
 				for(auto elev = manager.elevators.begin(); elev != manager.elevators.end(); ++elev){
-					if(elev->second.first.orders[f][t] && (t != BUTTON_COMMAND || elev->first == manager.ID)){
+					if(elev->second.elevator.orders[f][t] && (t != BUTTON_COMMAND || elev->first == manager.ID)){
 						on = true;
 					}
 				}
 				lights[f][t] = on;
  			}
 		}
-		manager.elevators[manager.ID].first.set_order_lights(lights);
+		manager.elevators[manager.ID].elevator.set_order_lights(lights);
 		usleep(1000*100);
 	}
 }
@@ -87,9 +87,9 @@ void print_status(){
 		printf("Current state: %s ID: %i  \n", manager.current_state == MASTER? "MASTER" : "SLAVE", manager.ID);
 		for(auto elev = manager.elevators.begin(); elev != manager.elevators.end(); elev++){
 			printf("\tID: %i ", elev->first);
-			printf("Timeout: %s ", elev->second.second.is_time_out(2)? "yes" : "no");
-			printf("Last floor: %i ", elev->second.first.last_floor);
-			printf("Next floor: %i ", elev->second.first.next_stop());
+			printf("Timeout: %s ", elev->second.udp_timeout.is_time_out(2)? "yes" : "no");
+			printf("Last floor: %i ", elev->second.elevator.last_floor);
+			printf("Next floor: %i ", elev->second.elevator.next_stop());
 			printf("      \n");
 			num_elevators++;
 		}

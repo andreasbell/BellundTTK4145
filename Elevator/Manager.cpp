@@ -41,8 +41,8 @@ void Manager::message_handler(char msg[], int length){
 
 		switch(msg[MSG_TYPE]){
 			case STATUS:
-				elevators[msg[MSG_ID]].second.start();
-				string_to_elevator(&msg[MSG_PAYLOAD], elevators[msg[MSG_ID]].first);
+				elevators[msg[MSG_ID]].udp_timeout.start();
+				string_to_elevator(&msg[MSG_PAYLOAD], elevators[msg[MSG_ID]].elevator);
 				break;
 			case STATUS_REQUEST:
 				if(current_state == MASTER){
@@ -50,7 +50,7 @@ void Manager::message_handler(char msg[], int length){
 				}
 				break;
 			case PROCESSED_ORDER:
-				elevators[msg[MSG_PAYLOAD]].first.add_order((int)msg[MSG_PAYLOAD +1], (elev_button_type_t)msg[MSG_PAYLOAD + 2]);
+				elevators[msg[MSG_PAYLOAD]].elevator.add_order((int)msg[MSG_PAYLOAD +1], (elev_button_type_t)msg[MSG_PAYLOAD + 2]);
 				break;
 			case NEW_ORDER:
 				if(current_state == MASTER){
@@ -66,9 +66,9 @@ void Manager::find_best_elevator(elev_button_type_t type, int floor, int elev_id
 	int best_time = 100000000;
 	if(type != BUTTON_COMMAND){
 		for(auto elev = elevators.begin(); elev != elevators.end(); elev++){
-			int temp = cost_function(elev->second.first, floor, type);
+			int temp = cost_function(elev->second.elevator, floor, type);
 			//printf("Elevator %i Duration %i\n",elev->first, temp);
-			if (temp < best_time && !elev->second.second.is_time_out(TIMEOUT)){ 
+			if (temp < best_time && !elev->second.udp_timeout.is_time_out(TIMEOUT)){ 
 				best_time = temp;
 				best_elev = elev->first;
 			}
@@ -82,7 +82,7 @@ void Manager::send_status(int id){
 	msg[MSG_ID] = id;
 	msg[MSG_STATE] = current_state;
 	msg[MSG_TYPE] = STATUS;
-	elevator_to_string(&msg[MSG_PAYLOAD], elevators[id].first);
+	elevator_to_string(&msg[MSG_PAYLOAD], elevators[id].elevator);
 	msg[MSG_CRC] = CRC(msg, 128);
 	UDP.send(msg, 128);
 }
@@ -121,14 +121,14 @@ int Manager::CRC(char msg[], int length){
 
 void Manager::check_timeout(){
 	for(auto elev = elevators.begin(); elev != elevators.end(); elev++){
-		if (elev->second.second.is_time_out(TIMEOUT)){ //Redistribute orders
+		if (elev->second.udp_timeout.is_time_out(TIMEOUT)){ //Redistribute orders
 			for (int i = 0; i < N_FLOORS; ++i){
-				if(elev->second.first.orders[i][BUTTON_CALL_UP]){
-					elev->second.first.orders[i][BUTTON_CALL_UP] = false;
+				if(elev->second.elevator.orders[i][BUTTON_CALL_UP]){
+					elev->second.elevator.orders[i][BUTTON_CALL_UP] = false;
 					if(current_state == MASTER){ find_best_elevator(BUTTON_CALL_UP, i, ID);}
 				}
-				if(elev->second.first.orders[i][BUTTON_CALL_DOWN]){
-					elev->second.first.orders[i][BUTTON_CALL_UP] = false;
+				if(elev->second.elevator.orders[i][BUTTON_CALL_DOWN]){
+					elev->second.elevator.orders[i][BUTTON_CALL_UP] = false;
 					if(current_state == MASTER){ find_best_elevator(BUTTON_CALL_DOWN, i, ID);}
 				}
 			}
