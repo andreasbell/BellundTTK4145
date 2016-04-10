@@ -170,9 +170,11 @@ void Elevator::remove_order(int floor){
 	}
 }
 
-void Elevator::set_order_lights(elev_button_type_t type){
+void Elevator::set_order_lights(bool orders[N_FLOORS][N_BUTTONS]){
 	for (int floor = 0; floor < N_FLOORS; ++floor){
-			elev_set_button_lamp(type, floor, orders[floor][type]);
+		for (int type = 0; type < N_BUTTONS; ++type){
+			elev_set_button_lamp((elev_button_type_t)type, floor, orders[floor][type]);
+		}
 	}
 }
 

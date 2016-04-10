@@ -26,7 +26,7 @@ public:
 	bool poll_orders(int& f, elev_button_type_t& t);
 	void add_order(int floor, elev_button_type_t type);
 	void remove_order(int floor);
-	void set_order_lights(elev_button_type_t type);
+	void set_order_lights(bool orders[N_FLOORS][N_BUTTONS]);
 
 private:
 	/*Finite state machine*/

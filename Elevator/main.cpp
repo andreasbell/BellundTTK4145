@@ -57,19 +57,25 @@ void run_elevator(){
 }
 
 void poll_orders_and_set_order_lights(){
-	int f;
-	elev_button_type_t t;
+	int floor;
+	elev_button_type_t type;
+	bool lights[N_FLOORS][N_BUTTONS] = {};
 	while(true){
-		if (manager.elevators[manager.ID].first.poll_orders(f, t)){
-			manager.send_order(t, f, manager.ID, NEW_ORDER);
+		if (manager.elevators[manager.ID].first.poll_orders(floor, type)){
+			manager.send_order(type, floor, manager.ID, NEW_ORDER);
 		}
-		for(auto elev = manager.elevators.begin(); elev != manager.elevators.end(); ++elev){
-			elev->second.first.set_order_lights(BUTTON_CALL_UP);
-			elev->second.first.set_order_lights(BUTTON_CALL_DOWN);
-			if(elev->first == manager.ID){
-				elev->second.first.set_order_lights(BUTTON_COMMAND);
-			}
+		for (int f = 0; f < N_FLOORS; ++f){
+			for (int t = 0; t < N_BUTTONS; ++t){
+				bool on = false;
+				for(auto elev = manager.elevators.begin(); elev != manager.elevators.end(); ++elev){
+					if(elev->second.first.orders[f][t] && (t != BUTTON_COMMAND || elev->first == manager.ID)){
+						on = true;
+					}
+				}
+				lights[f][t] = on;
+ 			}
 		}
+		manager.elevators[manager.ID].first.set_order_lights(lights);
 		usleep(1000*100);
 	}
 }
