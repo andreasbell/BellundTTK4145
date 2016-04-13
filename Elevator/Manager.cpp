@@ -127,7 +127,7 @@ void Manager::check_timeout(){
 					if(get_state() == MASTER){ find_best_elevator(BUTTON_CALL_UP, i, ID);}
 				}
 				if(elev->second.elevator.get_order(i, BUTTON_CALL_DOWN)){
-					elev->second.elevator.set_order(i, BUTTON_CALL_UP, false);
+					elev->second.elevator.set_order(i, BUTTON_CALL_DOWN, false);
 					if(get_state() == MASTER){ find_best_elevator(BUTTON_CALL_DOWN, i, ID);}
 				}
 			}
