@@ -51,6 +51,7 @@ void check_and_send_status(){
 }
 
 void run_elevator(){
+	usleep(1000*200);
 	while(true){
 		manager.elevators[manager.ID].elevator.run();
 		usleep(1000);
