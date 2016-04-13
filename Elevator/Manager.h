@@ -6,6 +6,7 @@
 #include <map>
 #include <utility>
 #include <mutex>
+#include <atomic>
 
 typedef enum {MASTER, SLAVE}manager_state;
 typedef enum {STATUS, STATUS_REQUEST, NEW_ORDER, PROCESSED_ORDER}message_type;
@@ -19,14 +20,13 @@ struct elev_timer_pair {
 class Manager{
 private:
 	Timer timer;
-	int connected;
 	UDP_Connection UDP;
 	manager_state current_state;
 
 public:
 
 	std::map<int, elev_timer_pair> elevators;
-	int ID = 0;
+	std::atomic<int> ID;
 	std::mutex state_mutex;
 
 	Manager(int ID);

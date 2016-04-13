@@ -41,7 +41,6 @@ void run_manager(){
 }
 
 void check_and_send_status(){
-	manager.send_status_request(manager.ID);
 	usleep(1000*200);
 	while(true){
 		create_file_backup(manager.elevators[manager.ID].elevator);
@@ -86,7 +85,7 @@ void print_status(){
 	printf("\n");
 	while(true){
 		int num_elevators = 1;
-		printf("Current state: %s ID: %i  \n", manager.get_state() == MASTER? "MASTER" : "SLAVE", manager.ID);
+		printf("Current state: %s ID: %i  \n", manager.get_state() == MASTER? "MASTER" : "SLAVE", manager.ID.load());
 		for(auto elev = manager.elevators.begin(); elev != manager.elevators.end(); elev++){
 			printf("\tID: %i ", elev->first);
 			printf("Timeout: %s ", elev->second.udp_timeout.is_time_out(2)? "yes" : "no");
@@ -110,6 +109,7 @@ int main(){
 	//init
 	recover_file_backup(manager.elevators[manager.ID].elevator);
 	manager.elevators[manager.ID].elevator.init();
+	manager.send_status_request(manager.ID);
 
 	//Run
 	std::thread t1(run_manager);

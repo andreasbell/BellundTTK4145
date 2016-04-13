@@ -25,7 +25,7 @@ UDP_Connection::~UDP_Connection(){
 	close(sock);
 }
 
-void UDP_Connection::init(int port, char ip[], bool multicast){
+void UDP_Connection::init(int port, const char ip[], bool multicast){
 	/*Close open socket*/
 	//close(sock);
 

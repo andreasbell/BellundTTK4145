@@ -9,7 +9,6 @@
 Manager::Manager(int ID){
 	this->ID = ID;
 	set_state(SLAVE);
-	connected = false;
 	timer.start();
 }
 

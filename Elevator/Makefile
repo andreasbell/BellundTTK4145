@@ -19,11 +19,13 @@ program_OBJS += $(program_CXX_OBJS)
 program_LIBRARY_DIRS := $(current_dir) $(current_dir)/headers/  
 program_LIBRARIES := comedi m pthread
 
-CXXFLAGS += -Wall -g -std=c++11 -fsanitize=thread
-CFLAGS += -Wall -g -std=c99 -fsanitize=thread
+CXXFLAGS += -Wall -g -std=c++11 
+#-fsanitize=thread
+CFLAGS += -Wall -g -std=c99 
+#-fsanitize=thread
 
 CPPFLAGS += $(foreach includedir,$(program_INCLUDE_DIRS),-I$(includedir))
-LDFLAGS += -fsanitize=thread
+#LDFLAGS += -fsanitize=thread
 LDFLAGS += $(foreach librarydir,$(program_LIBRARY_DIRS),-L$(librarydir))
 LDFLAGS += $(foreach library,$(program_LIBRARIES),-l$(library))
 

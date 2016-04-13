@@ -14,7 +14,7 @@ public:
 	~UDP_Connection();
 
 
-	void init(int port, char ip[], bool multicast);
+	void init(int port, const char ip[], bool multicast);
 
 	int send(char message[], int lengt);
 	int receive(char message[], int length);
