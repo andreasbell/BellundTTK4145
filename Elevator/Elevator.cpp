@@ -15,8 +15,20 @@ void Elevator::init(){
 	current_state = IDLE;
 }
 
+Elevator::Elevator(const Elevator& e) : timer(e.timer){
+	last_floor = e.last_floor.load();
+	direction = e.direction.load();
+	current_state = e.current_state.load();
+	for(int f = 0; f < N_FLOORS; ++f){
+		for(int t = 0; t < N_BUTTONS; ++t){
+			this->set_order(f, t, e.get_order(f, t));
+		}
+	}
+}
+
+
 void Elevator::fsm_run(){
-	switch (current_state){
+	switch (current_state.load()){
 	case RUN:
 		break;
 
@@ -36,7 +48,7 @@ void Elevator::fsm_run(){
 }
 
 void Elevator::fsm_idle(){
-	switch (current_state){
+	switch (current_state.load()){
 	case RUN:
 		elev_set_motor_direction(DIRN_STOP);
 		break;
@@ -57,7 +69,7 @@ void Elevator::fsm_idle(){
 }
 
 void Elevator::fsm_opendoor(){
-	switch (current_state){
+	switch (current_state.load()){
 	case RUN:
 		elev_set_motor_direction(DIRN_STOP);
 		elev_set_door_open_lamp(1);
@@ -110,7 +122,7 @@ bool Elevator::run(){
 	}
 
 	//Elevator statemachine
-	switch (current_state){
+	switch (current_state.load()){
 	case RUN:
 		if (elev_get_stop_signal()){fsm_emergency();}
 		else if (next == current_floor){fsm_opendoor();}
@@ -142,7 +154,7 @@ bool Elevator::run(){
 
 int Elevator::next_stop(){
 	if(current_state == IDLE || current_state == OPENDOOR){
-		if (orders[last_floor][BUTTON_COMMAND] || orders[last_floor][BUTTON_CALL_DOWN] || orders[last_floor][BUTTON_CALL_UP]){
+		if (get_order(last_floor, BUTTON_COMMAND) || get_order(last_floor, BUTTON_CALL_DOWN) || get_order(last_floor, BUTTON_CALL_UP)){
 			return last_floor;
 		}
 	}
@@ -151,7 +163,7 @@ int Elevator::next_stop(){
 	for(int count = 0; count < 2*N_FLOORS; count++){
 		int floor = ((count + loop_position)/N_FLOORS%2)? N_FLOORS -1 - (count + loop_position)%N_FLOORS : (count + loop_position)%N_FLOORS;
 		int type = (count + loop_position)/N_FLOORS%2;
-		if(orders[floor][type] || orders[floor][BUTTON_COMMAND]){
+		if(get_order(floor, type) || get_order(floor, BUTTON_COMMAND)){
 			direction = (floor < last_floor)? DIRN_DOWN : DIRN_UP;
 			return floor;
 		}
@@ -161,19 +173,19 @@ int Elevator::next_stop(){
 }
 
 void Elevator::add_order(int floor, elev_button_type_t type){
-	orders[floor][type] = true;
+	set_order(floor, type, true);
 }
 
 void Elevator::remove_order(int floor){
 	for (int type = 0; type < N_BUTTONS; ++type){
-		orders[floor][type] = false;
+		set_order(floor, type, false);
 	}
 }
 
-void Elevator::set_order_lights(bool orders[N_FLOORS][N_BUTTONS]){
+void Elevator::set_order_lights(bool lights[N_FLOORS][N_BUTTONS]){
 	for (int floor = 0; floor < N_FLOORS; ++floor){
 		for (int type = 0; type < N_BUTTONS; ++type){
-			elev_set_button_lamp((elev_button_type_t)type, floor, orders[floor][type]);
+			elev_set_button_lamp((elev_button_type_t)type, floor, lights[floor][type]);
 		}
 	}
 }
@@ -183,7 +195,7 @@ bool Elevator::poll_orders(int& f, elev_button_type_t& t){
 	for(int floor = 0; floor < N_FLOORS; floor++){
 		for(int button_type = 0; button_type < N_BUTTONS; button_type++){
 			if(!(floor == 0 && button_type == BUTTON_CALL_DOWN) && !(floor == N_FLOORS-1 && button_type == BUTTON_CALL_UP)){
-				if((bool)elev_get_button_signal((elev_button_type_t)button_type, floor) && !orders[floor][button_type]){
+				if((bool)elev_get_button_signal((elev_button_type_t)button_type, floor) && !get_order(floor, button_type)){
 					f = floor; 
 					t = (elev_button_type_t)button_type;
 					return true;
@@ -194,13 +206,26 @@ bool Elevator::poll_orders(int& f, elev_button_type_t& t){
 	return false;
 }
 
+bool Elevator::get_order(int floor, int button) const{
+	order_mutex.lock();
+	bool temp = orders[floor][button];
+	order_mutex.unlock();
+	return temp;
+}
+
+void Elevator::set_order(int floor, int button, bool value){
+	order_mutex.lock();
+	orders[floor][button] = value;
+	order_mutex.unlock();
+}
+
 void elevator_to_string(char string[], Elevator& elevator){
 	string[0] = (signed char)elevator.current_state;
 	string[1] = (signed char)elevator.direction;
 	string[2] = (signed char)elevator.last_floor;
 	for (int f = 0; f < N_FLOORS; f++){
 		for (int t = 0; t < N_BUTTONS; t++){
-			string[3 + f*N_BUTTONS + t] = elevator.orders[f][t];
+			string[3 + f*N_BUTTONS + t] = elevator.get_order(f, t);
 		}
 	}
 }
@@ -211,7 +236,7 @@ void string_to_elevator(char string[], Elevator& elevator){
 	elevator.last_floor = (int)string[2];
 	for (int f = 0; f < N_FLOORS; f++){
 		for (int t = 0; t < N_BUTTONS; t++){
-			elevator.orders[f][t] = string[3 + f*N_BUTTONS + t];
+			elevator.set_order(f, t, string[3 + f*N_BUTTONS + t]);
 		}
 	}
 }

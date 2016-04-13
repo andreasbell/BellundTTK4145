@@ -8,7 +8,7 @@
 
 Manager::Manager(int ID){
 	this->ID = ID;
-	current_state = SLAVE;
+	set_state(SLAVE);
 	connected = false;
 	timer.start();
 }
@@ -19,13 +19,13 @@ void Manager::run(){
 	if(size > 0){
 		message_handler(msg, size);
 	}
-	switch(current_state){
+	switch(get_state()){
 		case MASTER:
 			break;
 
 		case SLAVE:
 			if(timer.is_time_out(TIMEOUT)){
-				current_state = MASTER;
+				set_state(MASTER);
 			}
 			break;
 	}
@@ -35,7 +35,7 @@ void Manager::message_handler(char msg[], int length){
 	if(msg[MSG_CRC] == CRC(msg, length)){
 		//printf("State: %s ID: %i Type: %i \n", msg[MSG_STATE] == MASTER? "M" : "S", msg[MSG_ID], msg[MSG_TYPE]);
 		if(msg[MSG_STATE] == MASTER){
-			if(current_state == MASTER && msg[MSG_ID] < ID){current_state = SLAVE;}
+			if(get_state() == MASTER && msg[MSG_ID] < ID){set_state(SLAVE);}
 			else{timer.start();}
 		}
 
@@ -45,7 +45,7 @@ void Manager::message_handler(char msg[], int length){
 				string_to_elevator(&msg[MSG_PAYLOAD], elevators[msg[MSG_ID]].elevator);
 				break;
 			case STATUS_REQUEST:
-				if(current_state == MASTER){
+				if(get_state() == MASTER){
 					send_status(msg[MSG_PAYLOAD]);
 				}
 				break;
@@ -53,7 +53,7 @@ void Manager::message_handler(char msg[], int length){
 				elevators[msg[MSG_PAYLOAD]].elevator.add_order((int)msg[MSG_PAYLOAD +1], (elev_button_type_t)msg[MSG_PAYLOAD + 2]);
 				break;
 			case NEW_ORDER:
-				if(current_state == MASTER){
+				if(get_state() == MASTER){
 					find_best_elevator((elev_button_type_t)msg[MSG_PAYLOAD + 2], (int)msg[MSG_PAYLOAD + 1], (int)msg[MSG_ID]);
 				}
 				break;
@@ -80,7 +80,7 @@ void Manager::find_best_elevator(elev_button_type_t type, int floor, int elev_id
 void Manager::send_status(int id){
 	char msg[128];
 	msg[MSG_ID] = id;
-	msg[MSG_STATE] = current_state;
+	msg[MSG_STATE] = get_state();
 	msg[MSG_TYPE] = STATUS;
 	elevator_to_string(&msg[MSG_PAYLOAD], elevators[id].elevator);
 	msg[MSG_CRC] = CRC(msg, 128);
@@ -90,7 +90,7 @@ void Manager::send_status(int id){
 void Manager::send_status_request(int id){
 	char msg[6];
 	msg[MSG_ID] = this->ID;
-	msg[MSG_STATE] = current_state;
+	msg[MSG_STATE] = get_state();
 	msg[MSG_TYPE] = STATUS_REQUEST;
 	msg[MSG_PAYLOAD] = id;
 	msg[MSG_CRC] = CRC(msg, 6);
@@ -100,7 +100,7 @@ void Manager::send_status_request(int id){
 void Manager::send_order(elev_button_type_t type, int floor, int elevator, message_type order_type){
 	char msg[8];
 	msg[MSG_ID] = ID;
-	msg[MSG_STATE] = current_state;
+	msg[MSG_STATE] = get_state();
 	msg[MSG_TYPE] = order_type;
 	msg[MSG_PAYLOAD] = elevator;
 	msg[MSG_PAYLOAD + 1] = floor;
@@ -123,18 +123,33 @@ void Manager::check_timeout(){
 	for(auto elev = elevators.begin(); elev != elevators.end(); elev++){
 		if (elev->second.udp_timeout.is_time_out(TIMEOUT)){ //Redistribute orders
 			for (int i = 0; i < N_FLOORS; ++i){
-				if(elev->second.elevator.orders[i][BUTTON_CALL_UP]){
-					elev->second.elevator.orders[i][BUTTON_CALL_UP] = false;
-					if(current_state == MASTER){ find_best_elevator(BUTTON_CALL_UP, i, ID);}
+				if(elev->second.elevator.get_order(i, BUTTON_CALL_UP)){
+					elev->second.elevator.set_order(i, BUTTON_CALL_UP, false);
+					if(get_state() == MASTER){ find_best_elevator(BUTTON_CALL_UP, i, ID);}
 				}
-				if(elev->second.elevator.orders[i][BUTTON_CALL_DOWN]){
-					elev->second.elevator.orders[i][BUTTON_CALL_UP] = false;
-					if(current_state == MASTER){ find_best_elevator(BUTTON_CALL_DOWN, i, ID);}
+				if(elev->second.elevator.get_order(i, BUTTON_CALL_DOWN)){
+					elev->second.elevator.set_order(i, BUTTON_CALL_UP, false);
+					if(get_state() == MASTER){ find_best_elevator(BUTTON_CALL_DOWN, i, ID);}
 				}
 			}
 		}
 	}
 }
+
+void Manager::set_state(manager_state state){
+	state_mutex.lock();
+	current_state = state;
+	state_mutex.unlock();
+}
+
+manager_state Manager::get_state(){
+	manager_state temp_state;
+	state_mutex.lock();
+	temp_state = current_state;
+	state_mutex.unlock();
+	return temp_state;
+}
+
 
 void create_file_backup(Elevator& elev){
 	std::ofstream file("BACKUP.dat");

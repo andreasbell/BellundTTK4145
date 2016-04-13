@@ -5,6 +5,7 @@
 #include "UDP_Connection.h"
 #include <map>
 #include <utility>
+#include <mutex>
 
 typedef enum {MASTER, SLAVE}manager_state;
 typedef enum {STATUS, STATUS_REQUEST, NEW_ORDER, PROCESSED_ORDER}message_type;
@@ -20,14 +21,17 @@ private:
 	Timer timer;
 	int connected;
 	UDP_Connection UDP;
-
+	manager_state current_state;
 
 public:
-	manager_state current_state;
+
 	std::map<int, elev_timer_pair> elevators;
 	int ID = 0;
+	std::mutex state_mutex;
 
 	Manager(int ID);
+	void set_state(manager_state);
+	manager_state get_state();
 	void run();
 	void send_status(int id);
 	void send_status_request(int id);

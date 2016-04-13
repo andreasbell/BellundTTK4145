@@ -16,6 +16,8 @@
 #include <net/if.h>
 #include <arpa/inet.h>
 
+
+
 int get_ip(){
     struct ifreq ifr;
 
@@ -39,7 +41,6 @@ void run_manager(){
 }
 
 void check_and_send_status(){
-	recover_file_backup(manager.elevators[manager.ID].elevator);
 	manager.send_status_request(manager.ID);
 	usleep(1000*200);
 	while(true){
@@ -51,7 +52,6 @@ void check_and_send_status(){
 }
 
 void run_elevator(){
-	manager.elevators[manager.ID].elevator.init();
 	while(true){
 		manager.elevators[manager.ID].elevator.run();
 		usleep(1000);
@@ -70,7 +70,7 @@ void poll_orders_and_set_order_lights(){
 			for (int t = 0; t < N_BUTTONS; ++t){
 				bool on = false;
 				for(auto elev = manager.elevators.begin(); elev != manager.elevators.end(); ++elev){
-					if(elev->second.elevator.orders[f][t] && (t != BUTTON_COMMAND || elev->first == manager.ID)){
+					if(elev->second.elevator.get_order(f, t) && (t != BUTTON_COMMAND || elev->first == manager.ID)){
 						on = true;
 					}
 				}
@@ -86,11 +86,11 @@ void print_status(){
 	printf("\n");
 	while(true){
 		int num_elevators = 1;
-		printf("Current state: %s ID: %i  \n", manager.current_state == MASTER? "MASTER" : "SLAVE", manager.ID);
+		printf("Current state: %s ID: %i  \n", manager.get_state() == MASTER? "MASTER" : "SLAVE", manager.ID);
 		for(auto elev = manager.elevators.begin(); elev != manager.elevators.end(); elev++){
 			printf("\tID: %i ", elev->first);
 			printf("Timeout: %s ", elev->second.udp_timeout.is_time_out(2)? "yes" : "no");
-			printf("Last floor: %i ", elev->second.elevator.last_floor);
+			printf("Last floor: %i ", elev->second.elevator.last_floor.load());
 			printf("Next floor: %i ", elev->second.elevator.next_stop());
 			printf("      \n");
 			num_elevators++;
@@ -107,7 +107,11 @@ void print_status(){
 
 int main(){
 	printf("ELEVATOR PROGRAM STARTED\n");
+	//init
+	recover_file_backup(manager.elevators[manager.ID].elevator);
+	manager.elevators[manager.ID].elevator.init();
 
+	//Run
 	std::thread t1(run_manager);
 	std::thread t2(check_and_send_status);
 	std::thread t3(run_elevator);

@@ -2,33 +2,45 @@
 #include "elev.h"
 #include "Timer.h"
 #include <mutex>
+#include <atomic>
 
 typedef enum { RUN, IDLE, OPENDOOR, EMERGENCY }elevator_state;
 
 class Elevator{
 public:
 	/*State*/
-	elevator_state current_state;
-	elev_motor_direction_t direction;
-	int last_floor;
+	std::atomic<elevator_state> current_state;
+	std::atomic<elev_motor_direction_t> direction;
+	std::atomic<int> last_floor;
 	Timer timer;
 
 	/*Orders*/
-	bool orders[N_FLOORS][N_BUTTONS] = {};
 
 	/*Elevator functions*/
 	void init();
 	bool run();
 
-	/*Help functions*/
-	int next_stop();
+	/*Constructors*/
+	Elevator() = default;
+	Elevator(const Elevator& e);
 
+	/*Help functions*/
+
+
+
+
+	int next_stop();
+	bool get_order(int floor, int button) const;
+	void set_order(int floor, int button, bool value);
 	bool poll_orders(int& f, elev_button_type_t& t);
 	void add_order(int floor, elev_button_type_t type);
 	void remove_order(int floor);
-	void set_order_lights(bool orders[N_FLOORS][N_BUTTONS]);
+	void set_order_lights(bool lights[N_FLOORS][N_BUTTONS]);
 
 private:
+	mutable std::mutex order_mutex;
+	bool orders[N_FLOORS][N_BUTTONS] = {};
+
 	/*Finite state machine*/
 	void fsm_run();
 	void fsm_idle();

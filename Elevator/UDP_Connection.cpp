@@ -10,7 +10,7 @@
 
 
 UDP_Connection::UDP_Connection(){
-	init(DEFAULT_PORT, "0.0.0.0", true); 
+	init(DEFAULT_PORT, "0.0.0.0", true);
 }
 
 UDP_Connection::UDP_Connection(int port, char ip[]){

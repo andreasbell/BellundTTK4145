@@ -1,7 +1,7 @@
-#include <netinet/in.h>
-
 #ifndef __NETWORK_CONNECTION_H__
 #define __NETWORK_CONNECTION_H__
+
+#include <netinet/in.h>
 
 class Network_Connection{
 public:
@@ -10,6 +10,7 @@ public:
 	int nBytes;
 
 	bool error = false;
+
 
 	struct sockaddr_in sa_in;
 	struct sockaddr_in sa_out;
