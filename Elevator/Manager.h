@@ -19,25 +19,34 @@ struct elev_timer_pair {
 
 class Manager{
 private:
+	/*Manager state*/
 	Timer timer;
-	UDP_Connection UDP;
 	manager_state current_state;
-
-public:
-
-	std::map<int, elev_timer_pair> elevators;
-	std::atomic<int> ID;
 	std::mutex state_mutex;
 
+	/*UDP multicast connection*/
+	UDP_Connection UDP;
+
+public:
+	/*Map over all elevators on network*/
+	std::map<int, elev_timer_pair> elevators;
+
+	/*Manager ID*/
+	std::atomic<int> ID;
+
 	Manager(int ID);
-	void set_state(manager_state);
-	manager_state get_state();
 	void run();
+
+	/*Messaging functions*/
 	void send_status(int id);
 	void send_status_request(int id);
-	void message_handler(char msg[], int length);
-	void find_best_elevator(elev_button_type_t type, int floor, int elev_id);
 	void send_order(elev_button_type_t type, int floor, int elevator, message_type order_type);
+	void message_handler(char msg[], int length);
+
+	/*Help functions*/
+	void set_state(manager_state);
+	manager_state get_state();
+	void find_best_elevator(elev_button_type_t type, int floor, int elev_id);
 	int CRC(char msg[], int length);
 	void check_timeout();
 };

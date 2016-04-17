@@ -4,7 +4,7 @@
 #define DOOR_OPEN_TIME 3
 
 void Elevator::init(){
-	elev_init(); //Returns false if it fails
+	elev_init();
 	direction = DIRN_DOWN;
 	elev_set_motor_direction(direction);
 	timer.start();

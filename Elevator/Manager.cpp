@@ -32,7 +32,6 @@ void Manager::run(){
 
 void Manager::message_handler(char msg[], int length){
 	if(msg[MSG_CRC] == CRC(msg, length)){
-		//printf("State: %s ID: %i Type: %i \n", msg[MSG_STATE] == MASTER? "M" : "S", msg[MSG_ID], msg[MSG_TYPE]);
 		if(msg[MSG_STATE] == MASTER){
 			if(get_state() == MASTER && msg[MSG_ID] < ID){set_state(SLAVE);}
 			else{timer.start();}
@@ -66,7 +65,6 @@ void Manager::find_best_elevator(elev_button_type_t type, int floor, int elev_id
 	if(type != BUTTON_COMMAND){
 		for(auto elev = elevators.begin(); elev != elevators.end(); elev++){
 			int temp = cost_function(elev->second.elevator, floor, type);
-			//printf("Elevator %i Duration %i\n",elev->first, temp);
 			if (temp < best_time && !elev->second.udp_timeout.is_time_out(TIMEOUT)){ 
 				best_time = temp;
 				best_elev = elev->first;
@@ -118,7 +116,7 @@ int Manager::CRC(char msg[], int length){
 	return crc; 
 }
 
-void Manager::check_timeout(){
+void Manager::check_timeout(){ //check if elevators have timed out
 	for(auto elev = elevators.begin(); elev != elevators.end(); elev++){
 		if (elev->second.udp_timeout.is_time_out(TIMEOUT)){ //Redistribute orders
 			for (int i = 0; i < N_FLOORS; ++i){
@@ -179,16 +177,15 @@ void recover_file_backup(Elevator& elev){
 double cost_function(Elevator e, int floor, elev_button_type_t type){
 	double duration = 0;
 	e.add_order(floor, type);
-	if (e.current_state == OPENDOOR){
+	if (e.current_state == OPENDOOR){ //if door open
 		duration += TIME_DOOR_OPEN/2.0;
 	}
-	else if (e.current_state == RUN){
+	else if (e.current_state == RUN){ //if between floors
 		duration += TIME_TRAVEL_BETWEEN_FLOORS/2.0;
 	}
 	int next = e.next_stop();
 	e.current_state = RUN;
-	while(true){
-		//printf("Next: %i Last: %i\n", e.next_stop(), e.last_floor);
+	while(true){ //Simulate elevator movement
 		if (next == e.last_floor){
 			duration += TIME_DOOR_OPEN;
 			e.remove_order(e.last_floor);

@@ -26,9 +26,6 @@ UDP_Connection::~UDP_Connection(){
 }
 
 void UDP_Connection::init(int port, const char ip[], bool multicast){
-	/*Close open socket*/
-	//close(sock);
-
 	/*Create UDP socket*/
 	if((sock = socket(PF_INET, SOCK_DGRAM | SOCK_NONBLOCK, 0)) < 0){error = true;}
 

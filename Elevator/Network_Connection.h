@@ -7,7 +7,6 @@ class Network_Connection{
 public:
 	int sock;
 	int portNum;
-	int nBytes;
 
 	bool error = false;
 

@@ -14,8 +14,6 @@ public:
 	std::atomic<int> last_floor;
 	Timer timer;
 
-	/*Orders*/
-
 	/*Elevator functions*/
 	void init();
 	bool run();
@@ -25,10 +23,6 @@ public:
 	Elevator(const Elevator& e);
 
 	/*Help functions*/
-
-
-
-
 	int next_stop();
 	bool get_order(int floor, int button) const;
 	void set_order(int floor, int button, bool value);
@@ -38,6 +32,7 @@ public:
 	void set_order_lights(bool lights[N_FLOORS][N_BUTTONS]);
 
 private:
+	/*Orders*/
 	mutable std::mutex order_mutex;
 	bool orders[N_FLOORS][N_BUTTONS] = {};
 
